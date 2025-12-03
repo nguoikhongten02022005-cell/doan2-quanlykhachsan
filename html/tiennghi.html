@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tiện ích và dịch vụ cao cấp tại QuickStay. WiFi miễn phí, phòng gym, spa, và nhiều tiện nghi khác.">
+    <title>Tiện Nghi & Dịch Vụ - QuickStay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/index.css?v=2025">
+    <link rel="stylesheet" href="../css/tiennghi.css?v=2025">
+    <link rel="stylesheet" href="../css/chatbot.css?v=2025">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dau-trang">
+        <nav class="thanh-dieu-huong">
+            <div class="hop-dieu-huong">
+                <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                
+                <ul class="menu-dieu-huong">
+                    <li><a href="index.html">Trang chủ</a></li>
+                    <li><a href="thongtindatphong.html">Thông tin đặt phòng</a></li>
+                    <li><a href="tintuc.html">Giới thiệu</a></li>
+                    <li><a href="tiennghi.html">Tiện nghi</a></li>
+                </ul>
+                
+                <div class="hanh-dong-dieu-huong">
+                    <!-- Hiển thị khi chưa đăng nhập -->
+                    <button class="nut-dang-nhap" id="nutDangNhap" onclick="window.location.href='login.html'">Đăng Nhập</button>
+                    
+                    <!-- Hiển thị khi đã đăng nhập -->
+                    <div class="user-dropdown" id="userDropdown" style="display: none;">
+                        <button class="user-dropdown-btn" onclick="toggleUserMenu(event)">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userName">User</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <a href="thongtincanhan.html" class="user-dropdown-item">
+                                <i class="fas fa-user"></i> Thông tin cá nhân
+                            </a>
+                            <a href="#" onclick="return dangXuat(event);" class="user-dropdown-item logout">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <button class="nut-menu-banh" id="nutMenu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="nen-menu-di-dong" id="nenDiDong"></div>
+        
+        <!-- Menu di động -->
+        <div class="menu-di-dong" id="menuDiDong">
+            <div class="dau-menu-di-dong">
+                <div class="logo">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                <button class="nut-dong-menu" id="dongMenu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="lien-ket-menu-di-dong">
+                <a href="index.html">Trang chủ</a>
+                <a href="thongtindatphong.html">Thông tin đặt phòng</a>
+                <a href="tintuc.html">Giới thiệu</a>
+                <a href="tiennghi.html">Tiện nghi</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="noi-dung-chinh">
+        <!-- Hero Section -->
+        <section class="hero-tien-nghi">
+            <div class="hop-chua">
+                <h1>Trải Nghiệm Đẳng Cấp Tại Khách Sạn</h1>
+                <p>Tại khách sạn của chúng tôi, chúng tôi cam kết mang đến cho quý khách những trải nghiệm tuyệt vời nhất với hệ thống tiện ích hiện đại và dịch vụ chuyên nghiệp. Từ spa thư giãn đến nhà hàng ẩm thực cao cấp, từ hồ bơi vô cực đến phòng gym 24/7, mọi tiện ích đều được thiết kế để đáp ứng nhu cầu và mong muốn của từng vị khách.</p>
+            </div>
+        </section>
+
+        <!-- 3 Features -->
+        <section class="ba-dac-diem">
+            <div class="hop-chua">
+                <div class="luoi-dac-diem">
+                    <div class="the-dac-diem">
+                        <div class="icon-dac-diem">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3>Chất Lượng Cao</h3>
+                        <p>Tiêu chuẩn 5 sao quốc tế</p>
+                    </div>
+                    
+                    <div class="the-dac-diem">
+                        <div class="icon-dac-diem xanh">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Phục Vụ 24/7</h3>
+                        <p>Hỗ trợ mọi lúc mọi nơi</p>
+                    </div>
+                    
+                    <div class="the-dac-diem">
+                        <div class="icon-dac-diem tim">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <h3>Đẳng Cấp VIP</h3>
+                        <p>Trải nghiệm cao cấp</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tiện Ích Bổ Sung -->
+        <section class="tien-ich-bo-sung">
+            <div class="hop-chua">
+                <h2>Tiện Ích Bổ Sung</h2>
+                <p class="mo-ta-tien-ich">Những tiện ích hiện đại và dịch vụ tiện lợi khác</p>
+                
+                <div class="luoi-tien-ich">
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-wifi"></i>
+                        <h4>WiFi Miễn Phí</h4>
+                        <p>Kết nối internet tốc độ cao</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-car"></i>
+                        <h4>Đỗ Xe</h4>
+                        <p>Bãi đỗ xe an toàn 24/7</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-clock"></i>
+                        <h4>Room Service</h4>
+                        <p>Dịch vụ phòng 24/7</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-camera"></i>
+                        <h4>Chụp Ảnh</h4>
+                        <p>Dịch vụ chụp ảnh chuyên nghiệp</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-volume-up"></i>
+                        <h4>Karaoke</h4>
+                        <p>Phòng karaoke hiện đại</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-shield-alt"></i>
+                        <h4>Bảo Vệ</h4>
+                        <p>An ninh 24/7</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-water"></i>
+                        <h4>Nước Nóng</h4>
+                        <p>Hệ thống nước nóng lạnh</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-fire-extinguisher"></i>
+                        <h4>Hệ Thống PCCC</h4>
+                        <p>An toàn chữa cháy</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-university"></i>
+                        <h4>ATM</h4>
+                        <p>Máy ATM tiện lợi</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h4>Cửa Hàng</h4>
+                        <p>Mua sắm tại chỗ</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-medkit"></i>
+                        <h4>Y Tế</h4>
+                        <p>Dịch vụ y tế khẩn cấp</p>
+                    </div>
+                    
+                    <div class="muc-tien-ich">
+                        <i class="fas fa-phone"></i>
+                        <h4>Tổng Đài</h4>
+                        <p>Hỗ trợ khách hàng</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cam Kết Chất Lượng -->
+        <section class="cam-ket-chat-luong">
+            <div class="hop-chua">
+                <h2>Cam Kết Chất Lượng Dịch Vụ</h2>
+                <p class="mo-ta-cam-ket">Với hơn 20 năm kinh nghiệm trong ngành khách sạn, chúng tôi tự hào mang đến cho quý khách những trải nghiệm tuyệt vời nhất. Mỗi tiện ích, mỗi dịch vụ đều được thiết kế và vận hành với tiêu chuẩn cao nhất, đảm bảo sự hài lòng tuyệt đối cho từng vị khách.</p>
+                
+                <div class="luoi-cam-ket">
+                    <div class="the-cam-ket">
+                        <div class="icon-cam-ket">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3>Đánh Giá Cao</h3>
+                        <p>Được khách hàng đánh giá 4.8/5 sao và nhận được nhiều giải thưởng uy tín trong ngành.</p>
+                    </div>
+                    
+                    <div class="the-cam-ket">
+                        <div class="icon-cam-ket xanh">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3>Đảm Bảo Chất Lượng</h3>
+                        <p>Tất cả tiện ích đều được kiểm tra và bảo trì thường xuyên để đảm bảo hoạt động tốt nhất.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="chan-trang">
+        <div class="hop-chan-trang">
+            <div class="khu-chan-trang">
+                <div class="logo-chan-trang">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                <p class="mo-ta-chan-trang">Dịch vụ đặt phòng khách sạn hàng đầu gần bạn.</p>
+            </div>
+        </div>
+        <div class="chan-trang-duoi">
+            <div class="hop-chan-trang">
+                <p>&copy; 2025 QuickStay. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/common.js?v=2025"></script>
+    <script src="../js/tiennghi.js?v=2025" defer></script>
+    
+    <!-- Chatbot Widget -->
+    <div class="chatbot-container">
+        <button class="chatbot-button" id="chatbotButton">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3><i class="fas fa-robot"></i> Trợ lý AI QuickStay</h3>
+                <button class="chatbot-close" id="chatbotClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input-area">
+                <input 
+                    type="text" 
+                    class="chatbot-input" 
+                    id="chatbotInput" 
+                    placeholder="Nhập câu hỏi của bạn..."
+                >
+                <button class="chatbot-send" id="chatbotSend">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/chatbot.js?v=2025"></script>
+</body>
+</html>
+

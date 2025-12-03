@@ -1,0 +1,146 @@
+/* Layout for intro page */
+.trang-lien-he {
+    padding-top: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at top left, #e0f2fe 0, #f8fafc 40%, #f9fafb 100%);
+}
+
+.hop-lien-he {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.25rem clamp(1.5rem, 4vw, 2.5rem) 3rem;
+}
+
+.tieu-de-lien-he {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.tieu-de-lien-he h1 {
+    font-size: clamp(2.2rem, 5vw, 2.8rem);
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1rem;
+}
+
+.tieu-de-lien-he p {
+    font-size: 1.1rem;
+    color: #6b7280;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+
+.noi-dung-lien-he {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    margin-bottom: 3.5rem;
+}
+
+
+.form-lien-he {
+    background: white;
+    padding: 2.25rem 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+    border-top: 4px solid #4f46e5;
+}
+
+.form-lien-he h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1.25rem;
+}
+
+.thong-tin-lien-he {
+    background: white;
+    padding: 2.25rem 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+    border-top: 4px solid #0ea5e9;
+}
+
+.thong-tin-lien-he h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+}
+
+.muc-thong-tin {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.muc-thong-tin:last-of-type {
+    border-bottom: none;
+    margin-bottom: 2rem;
+}
+
+.bieu-tuong-thong-tin {
+    width: 40px;
+    height: 40px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bieu-tuong-thong-tin i {
+    font-size: 1.2rem;
+    color: #1f2937;
+}
+
+.chi-tiet-thong-tin h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.chi-tiet-thong-tin p {
+    font-size: 0.95rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .trang-lien-he {
+        padding-top: 40px;
+    }
+    
+    .hop-lien-he {
+        padding: 2rem 1rem;
+    }
+    
+    .noi-dung-lien-he {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .form-lien-he,
+    .thong-tin-lien-he {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tieu-de-lien-he h1 {
+        font-size: 1.5rem;
+    }
+    
+    .form-lien-he,
+    .thong-tin-lien-he {
+        padding: 1.25rem;
+    }
+}

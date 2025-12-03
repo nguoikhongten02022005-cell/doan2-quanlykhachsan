@@ -1,0 +1,838 @@
+
+.than-dang-nhap {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../img/anh-ha-noi.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.hop-dang-nhap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.vo-boc-dang-nhap {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 450px;
+    background: transparent;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+
+/* Form Section */
+.khu-bieu-mau-dn {
+    padding: 2rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    width: 100%;
+}
+
+.hop-bieu-mau {
+    width: 100%;
+    max-width: 400px;
+}
+
+.hop-bieu-mau::before {
+    content: '';
+    display: block;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
+}
+
+/* Tab Navigation */
+.dieu-huong-tab {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    background: transparent;
+    padding: 0;
+    position: relative;
+}
+
+.dieu-huong-tab::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.nut-tab {
+    flex: initial;
+    padding: 0.5rem 1.5rem;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.nut-tab:hover {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.nut-tab.active {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.nut-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.4);
+}
+
+.noi-dung-tab {
+    display: none;
+}
+
+.noi-dung-tab.active {
+    display: block;
+}
+
+/* Auth Form */
+.bieu-mau-xac-thuc {
+    width: 100%;
+}
+
+.bieu-mau-xac-thuc h2 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: #ffffff;
+    margin: 0 0 1rem 0;
+    text-align: center;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+}
+
+.tieu-de-phu-bieu-mau {
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+    margin: 0 0 3rem 0;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Groups */
+.nhom-truong {
+    margin-bottom: 1.5rem;
+}
+
+.hang-truong {
+    display: block;
+}
+
+.nhom-truong label {
+    display: none;
+}
+
+.vo-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.vo-input > i {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    z-index: 2;
+    font-size: 1rem;
+}
+
+.vo-input input,
+.vo-input select {
+    width: 100%;
+    padding: 1rem 3.5rem 1rem 3.8rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-sizing: border-box;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.vo-input input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.vo-input input:focus,
+.vo-input select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.nut-hien-mk {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 0;
+    z-index: 2;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nut-hien-mk i {
+    position: static;
+    font-size: 0.95rem;
+}
+
+.nut-hien-mk:hover {
+    color: #ffffff;
+}
+
+/* Form Options */
+.tuy-chon-bieu-mau {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.nhan-o-check {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.nhan-o-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+}
+
+.checkmark {
+    display: inline-block;
+}
+
+.nhan-o-check a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: underline;
+    transition: all 0.3s ease;
+}
+
+.nhan-o-check a:hover {
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+}
+
+.quen-mk {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.quen-mk:hover {
+    color: #ffffff;
+    text-shadow: 0 2px 15px rgba(255, 255, 255, 0.4);
+}
+
+/* Auth Button */
+.nut-xac-thuc {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.nut-xac-thuc:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.nut-xac-thuc:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.chu-nut {
+    transition: opacity 0.3s ease;
+}
+
+.tai-nut {
+    display: none;
+    position: absolute;
+}
+
+.tai-nut i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Social Login */
+.dang-nhap-xa-hoi {
+    display: none;
+}
+
+.ngan-cach {
+    position: relative;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.ngan-cach::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+}
+
+.ngan-cach span {
+    background: transparent;
+    padding: 0 1rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+}
+
+.nut-mxh {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.nut-mxh-don {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.nut-mxh-don.google {
+    color: #ea4335;
+}
+
+.nut-mxh-don.facebook {
+    color: #1877f2;
+}
+
+.nut-mxh-don:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    border-color: currentColor;
+}
+
+/* Notification */
+.thong-bao {
+    position: fixed;
+    top: 100px;
+    right: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    z-index: 1001;
+    max-width: 350px;
+}
+
+.thong-bao.show {
+    transform: translateX(0);
+}
+
+.thong-bao.success {
+    border-left: 4px solid #10b981;
+}
+
+.thong-bao.error {
+    border-left: 4px solid #ef4444;
+}
+
+.thong-bao.warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.thong-bao.info {
+    border-left: 4px solid #3b82f6;
+}
+
+.bieu-tuong-thong-bao.fas.fa-check-circle {
+    color: #10b981;
+}
+
+.bieu-tuong-thong-bao.fas.fa-exclamation-circle {
+    color: #ef4444;
+}
+
+.bieu-tuong-thong-bao.fas.fa-exclamation-triangle {
+    color: #f59e0b;
+}
+
+.bieu-tuong-thong-bao.fas.fa-info-circle {
+    color: #3b82f6;
+}
+
+.thong-diep-thong-bao {
+    color: #374151;
+    font-weight: 500;
+}
+
+/* Continue Session */
+.continue-session {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.continue-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.continue-content i {
+    font-size: 2rem;
+    color: #0ea5e9;
+}
+
+.continue-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: #0c4a6e;
+    font-size: 1rem;
+}
+
+.continue-info p {
+    margin: 0;
+    color: #075985;
+    font-size: 0.9rem;
+}
+
+.continue-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.btn-continue,
+.btn-new {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-continue {
+    background: #0ea5e9;
+    color: white;
+    border: none;
+}
+
+.nut-tiep-tuc:hover {
+    background: #0284c7;
+}
+
+.nut-moi {
+    background: white;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+}
+
+.nut-moi:hover {
+    background: #f8fafc;
+}
+
+@media (max-width: 767px) {
+    .than-dang-nhap {
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../img/anh-ha-noi.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: scroll;
+    }
+    
+    .hop-dang-nhap {
+        padding: 20px 1rem 2rem;
+        min-height: 100vh;
+    }
+    
+    .vo-boc-dang-nhap {
+        max-width: 100%;
+    }
+    
+    .khu-bieu-mau-dn {
+        padding: 1.5rem 1rem;
+    }
+    
+    .hop-bieu-mau {
+        max-width: 100%;
+    }
+    
+    .dieu-huong-tab {
+        margin-bottom: 1.5rem;
+    }
+    
+    .nut-tab {
+        padding: 0.65rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .bieu-mau-xac-thuc h2 {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .tieu-de-phu-bieu-mau {
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
+    
+    .nhom-truong {
+        margin-bottom: 1.25rem;
+    }
+    
+    .hang-truong {
+        display: block;
+    }
+    
+    .hop-bieu-mau::before {
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .nhom-truong label {
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .vo-input input,
+    .vo-input select {
+        padding: 0.9rem 3.2rem 0.9rem 3.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .vo-input i {
+        left: 1.3rem;
+        font-size: 0.95rem;
+    }
+    
+    .nut-hien-mk {
+        right: 1.3rem;
+    }
+    
+    .tuy-chon-bieu-mau {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        gap: 0.75rem;
+    }
+    
+    .nhan-o-check {
+        font-size: 0.85rem;
+    }
+    
+    .quen-mk {
+        font-size: 0.85rem;
+    }
+    
+    .nut-xac-thuc {
+        padding: 0.95rem;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .dieu-huong-tab {
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .nut-tab {
+        font-size: 1rem;
+        padding: 0.4rem 1.2rem;
+    }
+    
+    .ngan-cach {
+        margin-bottom: 1.25rem;
+    }
+    
+    .ngan-cach span {
+        font-size: 0.85rem;
+        padding: 0 0.75rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+    }
+    
+    .nut-mxh {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .nut-mxh-don {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+        border-width: 2px;
+    }
+    
+    /* Notification */
+    .thong-bao {
+        top: 80px;
+        right: 1rem;
+        left: 1rem;
+        max-width: none;
+        padding: 0.875rem 1.25rem;
+    }
+    
+    .bieu-tuong-thong-bao {
+        font-size: 1.25rem;
+    }
+    
+    .thong-diep-thong-bao {
+        font-size: 0.9rem;
+    }
+    
+    .tiep-tuc-phien {
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .noi-dung-tiep-tuc {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .noi-dung-tiep-tuc i {
+        font-size: 1.75rem;
+    }
+    
+    .thong-tin-tiep-tuc h4 {
+        font-size: 0.95rem;
+    }
+    
+    .thong-tin-tiep-tuc p {
+        font-size: 0.85rem;
+    }
+    
+    .hanh-dong-tiep-tuc {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+    
+    .nut-tiep-tuc,
+    .nut-moi {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-form-section {
+        padding: 1.75rem 1.25rem;
+    }
+    
+    .auth-form h2 {
+        font-size: 1.35rem;
+    }
+    
+    .tab-btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 0.65rem;
+    }
+    
+    .input-wrapper input,
+    .input-wrapper select {
+        font-size: 0.9rem;
+        padding: 0.75rem 0.875rem 0.75rem 2.5rem;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .login-container {
+        padding: 30px 2rem 2rem;
+    }
+    
+    .login-wrapper {
+        max-width: 520px;
+    }
+    
+    .login-form-section {
+        padding: 2.5rem;
+    }
+    
+    /* Form 2 cột */
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    /* Social 2 cột */
+    .social-buttons {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .continue-content {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .continue-actions {
+        width: auto;
+        flex-direction: row;
+    }
+    
+    .nut-tiep-tuc,
+    .nut-moi {
+        width: auto;
+    }
+    
+    /* Notification */
+    .notification {
+        right: 2rem;
+        left: auto;
+        max-width: 350px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .login-container {
+        padding: 30px 2rem 2rem;
+    }
+    
+    .login-wrapper {
+        max-width: 500px;
+    }
+    
+    .login-form-section {
+        padding: 3rem;
+    }
+    
+    /* Form 2 cột */
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    /* Social 2 cột */
+    .social-buttons {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .form-options {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+@media (min-width: 1200px) {
+    .vo-boc-dang-nhap {
+        max-width: 550px;
+    }
+}
