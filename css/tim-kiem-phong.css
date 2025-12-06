@@ -121,22 +121,27 @@
 }
 
 .truong-ngay-thang i, .truong-khach-phong i {
-    color: #2563eb;
+    color: #0071c2;
     margin-right: 12px;
-    font-size: 18px;
+    font-size: 20px;
     flex-shrink: 0;
+    line-height: 1;
 }
 
 .truong-ngay-thang span {
     font-size: 14px;
-    color: #666;
+    font-weight: 500;
+    color: #333;
     flex: 1;
+    line-height: 1.5;
 }
 
 .truong-khach-phong span {
     font-size: 14px;
-    color: #2563eb;
+    font-weight: 500;
+    color: #333;
     flex: 1;
+    line-height: 1.5;
 }
 
 .nut-tim-kiem-chinh {
@@ -161,7 +166,6 @@
 .noi-dung-chinh {
     min-height: calc(100vh - 200px);
     padding: 40px 0;
-    background: #f7f7f7;
     width: 100%;
 }
 
@@ -268,6 +272,31 @@
     /* Xóa padding cứng nếu nó gây lệch */
     padding: 0; 
     background: transparent; /* Để nền trắng của cha hiển thị */
+}
+
+/* Style tiện nghi - đồng bộ với trang chủ */
+.tien-ich-phong-tim-kiem {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.tien-ich-phong-tim-kiem .tien-ich {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: #666;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.tien-ich-phong-tim-kiem .tien-ich i {
+    font-size: 0.75rem;
+    color: #0071c2;
 }
 
 /* Giảm chiều cao khung sản phẩm trong trang tìm kiếm */
@@ -382,7 +411,7 @@
 .luoi-phong .gia-phong {
     font-size: 1.2rem !important;
     font-weight: 700 !important;
-    color: #1976d2 !important; 
+    color: #0071c2 !important; 
     margin-bottom: 4px !important;
 }
 
