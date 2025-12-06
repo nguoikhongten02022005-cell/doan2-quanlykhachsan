@@ -2,8 +2,10 @@
 
 body {
     font-family: 'Roboto', sans-serif;
+    font-size: 16px;
     line-height: 1.6;
     color: #333;
+    background: #ffffff;
     overflow-x: hidden;
     padding-top: 70px;
 }
@@ -2070,12 +2072,12 @@ body {
 }
 
 .nut-dat-ngay {
-    background: #059669;
+    background: #6366f1;
     color: white;
 }
 
 .nut-dat-ngay:hover {
-    background: #047857;
+    background: #4f46e5;
     transform: translateY(-1px);
 }
 
