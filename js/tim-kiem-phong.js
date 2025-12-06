@@ -83,48 +83,54 @@ function performSearch(checkin, checkout, adults, children) {
         return;
     }
 
-    // Bắt đầu lọc
     const availableRooms = rooms.filter(room => {
-        // A. Lọc theo trạng thái phòng (bảo trì thì bỏ qua)
+        // A. Lọc theo trạng thái phòng
         if (room.status === 'maintenance') return false;
 
-        // B. Lọc theo sức chứa
-        // Parse capacity từ chuỗi của phòng (VD: "2 người lớn, 1 trẻ em")
-        let roomAdults = 2; // Mặc định
-        if (room.adults) {
-            roomAdults = parseInt(room.adults);
-        } else if (room.capacity) {
-            const match = room.capacity.toString().match(/(\d+)\s*người lớn/);
-            if (match) roomAdults = parseInt(match[1]);
-        }
+        // B. Lọc theo sức chứa (SỬA LẠI: Dùng parseCapacity từ common.js)
+        let cap = { adults: 2, children: 0 };
         
-        // Nếu số khách lớn hơn sức chứa phòng quá nhiều -> Bỏ qua
-        if (adults > roomAdults + 1) return false; // Cho phép ghép thêm 1 người
+        // Kiểm tra nếu hàm parseCapacity có sẵn (từ common.js)
+        if (typeof parseCapacity === 'function') {
+            cap = parseCapacity(room);
+        } else {
+            // Fallback nếu không load được common.js
+            if (room.capacity) {
+                const matchAdults = room.capacity.toString().match(/(\d+)\s*người lớn/i);
+                const matchChildren = room.capacity.toString().match(/(\d+)\s*trẻ em/i);
+                if (matchAdults) cap.adults = parseInt(matchAdults[1]);
+                if (matchChildren) cap.children = parseInt(matchChildren[1]);
+            }
+        }
 
-        // C. Kiểm tra trùng lịch (Logic quan trọng nhất)
-        // Nếu có bất kỳ đơn đặt nào trùng thời gian -> Loại bỏ phòng này
+        // Logic so sánh chặt chẽ:
+        // 1. Số người lớn tìm kiếm phải <= Sức chứa người lớn của phòng
+        if (adults > cap.adults) return false;
+
+        // 2. Số trẻ em tìm kiếm phải <= Sức chứa trẻ em của phòng
+        // (Hoặc tổng số người phải phù hợp nếu bạn muốn linh động hơn)
+        if (children > cap.children) {
+             // Nếu trẻ em vượt quá, kiểm tra xem có thể bù bằng chỗ người lớn còn dư không
+             // Ví dụ: Phòng 4 NL, 0 TE. Khách: 2 NL, 1 TE => Vẫn ở được
+             const totalCapacity = cap.adults + cap.children;
+             const totalGuests = adults + children;
+             if (totalGuests > totalCapacity) return false;
+        }
+
+        // C. Kiểm tra trùng lịch (Giữ nguyên logic cũ của bạn)
         const isBooked = bookings.some(booking => {
-            // Chỉ kiểm tra các đơn của đúng phòng này và chưa bị hủy
             if (String(booking.roomId) !== String(room.id) || booking.status === 'cancelled') {
                 return false;
             }
-            
-            // Lấy ngày từ booking (hỗ trợ cả checkIn/checkOut và checkin/checkout)
             const bookingStart = normalizeDate(booking.checkIn || booking.checkin);
             const bookingEnd = normalizeDate(booking.checkOut || booking.checkout);
-            
             if (!bookingStart || !bookingEnd) return false;
-
-            // Logic kiểm tra 2 khoảng thời gian có giao nhau không:
-            // Khoảng thời gian giao nhau khi:
-            // - Ngày bắt đầu tìm kiếm < Ngày kết thúc đặt phòng VÀ
-            // - Ngày kết thúc tìm kiếm > Ngày bắt đầu đặt phòng
-            // Lưu ý: Cho phép checkout và checkin cùng ngày (không coi là trùng)
             return (searchStart < bookingEnd && searchEnd > bookingStart);
         });
 
-        return !isBooked; // Giữ lại nếu KHÔNG bị trùng lịch
+        return !isBooked;
     });
+    // --- KẾT THÚC SỬA LỖI LOGIC LỌC ---
 
     // 4. Hiển thị kết quả ra màn hình
     displayResults(availableRooms);
@@ -136,8 +142,6 @@ function displayResults(rooms) {
     const resultSection = document.getElementById('noiDungKetQua');
 
     if (headerCount) headerCount.textContent = rooms.length;
-    
-    // Đảm bảo khung kết quả hiển thị (vì trong HTML bạn để display: none)
     if (resultSection) resultSection.style.display = 'block';
 
     if (rooms.length === 0) {
@@ -156,7 +160,21 @@ function displayResults(rooms) {
         // Format giá tiền
         const price = new Intl.NumberFormat('vi-VN').format(room.price) + ' ₫';
         
-        // Tạo danh sách tiện nghi ngắn gọn (lấy 3 cái đầu)
+        // --- SỬA LỖI HIỂN THỊ DỮ LIỆU SỨC CHỨA ---
+        let cap = { adults: 2, children: 0 };
+        if (typeof parseCapacity === 'function') {
+            cap = parseCapacity(room); // Dùng hàm chung để lấy số liệu chính xác từ chuỗi capacity
+        } else {
+            // Fallback nếu không load được common.js
+            if (room.capacity) {
+                const matchAdults = room.capacity.toString().match(/(\d+)\s*người lớn/i);
+                const matchChildren = room.capacity.toString().match(/(\d+)\s*trẻ em/i);
+                if (matchAdults) cap.adults = parseInt(matchAdults[1]);
+                if (matchChildren) cap.children = parseInt(matchChildren[1]);
+            }
+        }
+        
+        // Tạo danh sách tiện nghi
         let amenitiesHtml = '';
         if (room.amenities) {
             const list = room.amenities.split(',').slice(0, 3);
@@ -175,7 +193,7 @@ function displayResults(rooms) {
                     <div class="thong-tin-phong-tim-kiem">
                         <div>
                             <h3 class="ten-phong-tim-kiem">${room.name}</h3>
-                            <p class="suc-chua-phong">${room.adults || 2} người lớn, ${room.children || 0} trẻ em</p>
+                            <p class="suc-chua-phong">${cap.adults} người lớn, ${cap.children} trẻ em</p>
                         </div>
                         
                         <div class="tien-ich-phong-tim-kiem">
