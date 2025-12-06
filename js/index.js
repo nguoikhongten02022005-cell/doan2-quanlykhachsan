@@ -24,7 +24,12 @@ function loadRoomsDynamic() {
     var roomsContainer = document.getElementById('roomsContainer');
     if (!roomsContainer) return;
     
-    var rooms = storageService.ensureRoomsSeeded();
+    var rooms = [];
+    try {
+        rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+    } catch (e) {
+        rooms = [];
+    }
     
     if (rooms.length === 0) {
         roomsContainer.innerHTML = '<p class="text-center" style="padding: 40px; color: #666;">Chưa có phòng nào. Vui lòng thêm phòng trong trang quản trị.</p>';
@@ -32,7 +37,12 @@ function loadRoomsDynamic() {
     }
     
     // Lấy danh sách bookings để kiểm tra phòng đã đặt
-    var bookings = storageService.getBookings();
+    var bookings = [];
+    try {
+        bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    } catch (e) {
+        bookings = [];
+    }
     
     // Hàm kiểm tra phòng đã được đặt chưa
     function isRoomCurrentlyBooked(roomId) {
@@ -546,9 +556,9 @@ function khoiTaoAnhNen() {
         }
         showSlide(currentSlide);
     }
+    
     khoangThoiGianSlide = setInterval(nextSlide, 5000);
 }
 
-if (typeof window !== 'undefined' && window.location.pathname.includes('index.html')) {
-    storageService.ensureRoomsSeeded();
-}
+
+
