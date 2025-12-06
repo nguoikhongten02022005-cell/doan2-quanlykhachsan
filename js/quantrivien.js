@@ -17,7 +17,6 @@ function mapRoomType(type) {
 }
 
 window.onload = function() {
-    khoiTaoDuLieu();
     loadAllData();
     showSection('dashboard');
     
@@ -45,151 +44,6 @@ function loadAllData() {
     loadAccounts();
     loadRevenueData();
 }
-
-function khoiTaoDuLieu() {
-    // Cập nhật loại phòng cũ về 4 loại chuẩn
-    var existingRooms = JSON.parse(localStorage.getItem('rooms') || '[]');
-    if (existingRooms.length > 0) {
-        var needUpdate = false;
-        for (var i = 0; i < existingRooms.length; i++) {
-            var newType = mapRoomType(existingRooms[i].type);
-            if (existingRooms[i].type !== newType) {
-                existingRooms[i].type = newType;
-                needUpdate = true;
-            }
-        }
-        if (needUpdate) {
-            localStorage.setItem('rooms', JSON.stringify(existingRooms));
-        }
-    }
-    
-    var rooms = localStorage.getItem('rooms');
-    if (!rooms || rooms === '[]') {
-        var demoRooms = [
-        {
-            id: 1,
-            name: 'Phòng The Peak Suite',
-            number: '105',
-            type: 'Standard',
-            price: '135000',
-            floor: '10',
-            capacity: '2 người lớn, 1 trẻ em',
-            status: 'available',
-                image: '../img/khachsan1(2).jpg'
-        },
-        {
-            id: 2,
-            name: 'Phòng Genesis Luxury Royal Suite',
-            number: '701',
-            type: 'Deluxe',
-            price: '180000',
-            floor: '7',
-            capacity: '2 người lớn, 1 trẻ em',
-            status: 'available',
-                image: '../img/khachsan2(2).jpg'
-        },
-        {
-            id: 3,
-            name: 'Phòng The Song Your house Apartment',
-            number: '301',
-            type: 'VIP',
-            price: '225000',
-            floor: '3',
-            capacity: '2 người lớn, 1 trẻ em',
-            status: 'available',
-                image: '../img/khachsan3(1).jpg'
-        },
-        {
-            id: 4,
-            name: 'Phòng The Song Deluxe Apartment',
-            number: '501',
-            type: 'Deluxe',
-            price: '170000',
-            floor: '5',
-            capacity: '2 người lớn, 1 trẻ em',
-            status: 'available',
-                image: '../img/khachsan4(1).jpg'
-        }
-    ];
-    // Không ghi đè dữ liệu từ index.js
-    // localStorage.setItem('rooms', JSON.stringify(demoRooms));
-    }
-    
-    // Khởi tạo dữ liệu mã giảm giá mẫu
-    var promotions = localStorage.getItem('promotions');
-    if (!promotions || promotions === '[]') {
-        var today = new Date();
-        var nextMonth = new Date(today);
-        nextMonth.setMonth(today.getMonth() + 1);
-        var nextYear = new Date(today);
-        nextYear.setFullYear(today.getFullYear() + 1);
-        
-        var samplePromotions = [
-            {
-                id: 1,
-                code: 'SUMMER2025',
-                discountType: 'percent',
-                discountValue: 20,
-                maxDiscount: 2000000,
-                minAmount: 1000000,
-                startDate: today.toISOString().split('T')[0],
-                endDate: nextYear.toISOString().split('T')[0],
-                maxUses: 100,
-                usedCount: 0,
-                description: 'Giảm 20% cho đơn hàng từ 1 triệu (tối đa 2 triệu)'
-            },
-            {
-                id: 3,
-                code: 'FLASHSALE15',
-                discountType: 'percent',
-                discountValue: 15,
-                maxDiscount: 1500000,
-                minAmount: 500000,
-                startDate: today.toISOString().split('T')[0],
-                endDate: nextMonth.toISOString().split('T')[0],
-                maxUses: 200,
-                usedCount: 0,
-                description: 'Flash Sale - Giảm 15% cho đơn từ 500k (tối đa 1.5 triệu)'
-            }
-        ];
-        
-        localStorage.setItem('promotions', JSON.stringify(samplePromotions));
-        console.log('Đã khởi tạo 2 mã giảm giá mẫu');
-    }
-    
-    // Khởi tạo dữ liệu tiện nghi mẫu
-    var amenities = localStorage.getItem('amenities');
-    var shouldInitialize = false;
-    
-    if (!amenities || amenities === '[]' || amenities === 'null') {
-        shouldInitialize = true;
-    } else {
-        // Kiểm tra xem dữ liệu có hợp lệ không
-        try {
-            var parsed = JSON.parse(amenities);
-            if (!Array.isArray(parsed) || parsed.length === 0) {
-                shouldInitialize = true;
-            }
-        } catch (e) {
-            // Nếu parse lỗi, khởi tạo lại
-            console.log('Lỗi parse dữ liệu tiện nghi:', e);
-            shouldInitialize = true;
-        }
-    }
-    
-    if (shouldInitialize) {
-        var demoAmenities = [
-            { id: 1, name: 'Wifi miễn phí', description: 'Wifi tốc độ cao miễn phí' },
-            { id: 2, name: 'TV màn hình phẳng', description: 'TV LCD 42 inch' },
-            { id: 3, name: 'Điều hòa', description: 'Điều hòa 2 chiều' },
-            { id: 4, name: 'Minibar', description: 'Tủ lạnh mini với đồ uống' },
-            { id: 5, name: 'Bàn làm việc', description: 'Bàn làm việc hiện đại' }
-        ];
-        localStorage.setItem('amenities', JSON.stringify(demoAmenities));
-        console.log('Đã khởi tạo 5 tiện nghi mẫu');
-    }
-}
-
 
 function logout() {
     if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
@@ -381,24 +235,13 @@ function loadAmenities() {
             }
         }
         
-        // Đợi một chút để đảm bảo DOM đã sẵn sàng (khi chuyển section)
-        setTimeout(function() {
         var amenitiesListEl = document.getElementById('amenitiesList');
         if (amenitiesListEl) {
             amenitiesListEl.innerHTML = html;
             console.log('Đã load ' + amenities.length + ' tiện nghi');
         } else {
             console.error('Không tìm thấy element amenitiesList');
-                // Thử lại sau 100ms nếu element chưa sẵn sàng
-                setTimeout(function() {
-                    var amenitiesListEl2 = document.getElementById('amenitiesList');
-                    if (amenitiesListEl2) {
-                        amenitiesListEl2.innerHTML = html;
-                        console.log('Đã load ' + amenities.length + ' tiện nghi (lần 2)');
-                    }
-                }, 100);
-            }
-        }, 50);
+        }
     } catch (e) {
         console.error('Lỗi khi load tiện nghi:', e);
     }
@@ -2054,8 +1897,6 @@ function showSection(sectionId) {
         }
     }
     
-    // Load lại dữ liệu khi chuyển section - đợi một chút để DOM sẵn sàng
-    setTimeout(function() {
     if (sectionId === 'amenities') {
         loadAmenities();
     } else if (sectionId === 'rooms') {
@@ -2067,7 +1908,6 @@ function showSection(sectionId) {
     } else if (sectionId === 'accounts') {
         loadAccounts();
     }
-    }, 100);
     
     // Cập nhật active nav item
     var navItems = document.querySelectorAll('.nav-item');
