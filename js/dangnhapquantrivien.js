@@ -1,28 +1,7 @@
 // Đăng nhập quản trị viên
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Tạo tài khoản admin mặc định nếu chưa có
-    ensureDefaultAdmin();
-    
-    // Xử lý nút hiện/ẩn mật khẩu
-    var toggleBtn = document.querySelector('.nut-hien-mk');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            var targetId = this.getAttribute('data-target');
-            var input = document.getElementById(targetId);
-            var icon = this.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
-    }
+    setupPasswordToggle();
     
     // Xử lý nút đăng nhập
     var loginBtn = document.querySelector('.nut-xac-thuc');
@@ -38,32 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Tạo tài khoản admin mặc định
-function ensureDefaultAdmin() {
-    var accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
-    
-    // Kiểm tra xem đã có tài khoản admin chưa
-    var hasAdmin = false;
-    for (var i = 0; i < accounts.length; i++) {
-        if (accounts[i].role === 'admin') {
-            hasAdmin = true;
-            break;
-        }
-    }
-    
-    // Nếu chưa có, tạo tài khoản mặc định
-    if (!hasAdmin) {
-        accounts.push({
-            id: Date.now(),
-            username: 'admin',
-            password: '1',
-            email: 'admin@quickstay.com',
-            role: 'admin',
-            status: 'active'
-        });
-        localStorage.setItem('accounts', JSON.stringify(accounts));
-    }
-}
+
 
 // Hàm đăng nhập
 function dangNhap() {
