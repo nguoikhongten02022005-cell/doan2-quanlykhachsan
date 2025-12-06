@@ -2,13 +2,19 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
+    var currentUser = ensureAuthenticated({
+        message: 'Vui lòng đăng nhập để xem giỏ phòng. Chuyển đến trang đăng nhập?',
+        returnUrl: window.location.href
+    });
+    if (!currentUser) return;
+
     khoiTaoMenuDiDong();
     taiDanhSachPhongGio();
     capNhatTomTatDonHang();
 });
 
 function taiDanhSachPhongGio() {
-    var allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    var allBookings = storageService.getBookings();
     // Chỉ lấy các booking chưa thanh toán (status = 'pending' hoặc không có status)
     var bookings = allBookings.filter(function(booking) {
         var status = booking.status || 'pending';
@@ -142,7 +148,7 @@ function taoThePhongGio(booking, index) {
 }
 
 function capNhatTomTatDonHang() {
-    var allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    var allBookings = storageService.getBookings();
     // Chỉ tính các booking chưa thanh toán (status = 'pending' hoặc không có status)
     var bookings = allBookings.filter(function(booking) {
         var status = booking.status || 'pending';
@@ -196,7 +202,7 @@ function suaPhong(index) {
 
 function xoaPhong(index) {
     if (confirm('Bạn có chắc muốn xóa phòng này khỏi giỏ hàng?')) {
-        var allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        var allBookings = storageService.getBookings();
         // Lấy danh sách booking chưa thanh toán để tìm đúng index
         var pendingBookings = allBookings.filter(function(booking) {
             var status = booking.status || 'pending';
@@ -212,7 +218,7 @@ function xoaPhong(index) {
             
             if (deleteIndex !== -1) {
                 allBookings.splice(deleteIndex, 1);
-                localStorage.setItem('bookings', JSON.stringify(allBookings));
+                storageService.saveBookings(allBookings);
                 taiDanhSachPhongGio();
                 capNhatTomTatDonHang();
                 alert('Đã xóa phòng khỏi giỏ hàng!');
@@ -240,7 +246,7 @@ function khoiTaoDuLieuMau() {
 
 // Hàm tạo booking mẫu để test
 function taoBookingMau() {
-    var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    var bookings = storageService.getBookings();
     
     // Chỉ tạo nếu chưa có booking nào
     if (bookings.length === 0) {
@@ -281,7 +287,7 @@ function taoBookingMau() {
         };
         
         bookings.push(sampleBooking);
-        localStorage.setItem('bookings', JSON.stringify(bookings));
+        storageService.saveBookings(bookings);
         console.log('Đã tạo booking mẫu');
     }
 }
@@ -298,7 +304,14 @@ function formatDateStr(date) {
 
 // Xử lý nút thanh toán
 document.getElementById('nutThanhToan').addEventListener('click', function() {
-    var allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    if (!ensureAuthenticated({
+        message: 'Bạn cần đăng nhập để thanh toán. Chuyển đến trang đăng nhập?',
+        returnUrl: window.location.href
+    })) {
+        return;
+    }
+
+    var allBookings = storageService.getBookings();
     // Chỉ kiểm tra các booking chưa thanh toán
     var bookings = allBookings.filter(function(booking) {
         var status = booking.status || 'pending';

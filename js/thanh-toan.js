@@ -6,6 +6,11 @@ var tongTienGoc = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
+    var authUser = ensureAuthenticated({
+        message: 'Bạn cần đăng nhập để tiếp tục thanh toán. Chuyển đến trang đăng nhập?',
+        returnUrl: window.location.href
+    });
+    if (!authUser) return;
     khoiTaoMenuDiDong();
     diemThongTinUser();
     taiDuLieuGioHang();
@@ -17,22 +22,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Tự động điền thông tin user vào form
 function diemThongTinUser() {
-    var currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-        try {
-            var userInfo = JSON.parse(currentUser);
-            if (userInfo.name) document.getElementById('hoTen').value = userInfo.name;
-            if (userInfo.email) document.getElementById('email').value = userInfo.email;
-            if (userInfo.phone) document.getElementById('soDienThoai').value = userInfo.phone;
-        } catch (e) {
-        }
+    var userInfo = getCurrentUserData();
+    if (userInfo) {
+        if (userInfo.name) document.getElementById('hoTen').value = userInfo.name;
+        if (userInfo.email) document.getElementById('email').value = userInfo.email;
+        if (userInfo.phone) document.getElementById('soDienThoai').value = userInfo.phone;
     }
 }
 
 // khoiTaoMenuDiDong đã được chuyển sang common.js
 
 function taiDuLieuGioHang() {
-    var allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    var allBookings = storageService.getBookings();
     // Chỉ lấy các booking chưa thanh toán (status = 'pending' hoặc không có status)
     var bookings = allBookings.filter(function(booking) {
         var status = booking.status || 'pending';
@@ -241,7 +242,7 @@ function thucHienThanhToan() {
 }
 
 function luuThongTinDatPhong() {
-    var allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    var allBookings = storageService.getBookings();
     // Chỉ cập nhật các booking chưa thanh toán (status = 'pending')
     var bookings = allBookings.filter(function(booking) {
         var status = booking.status || 'pending';
@@ -316,7 +317,7 @@ function luuThongTinDatPhong() {
         }
     }
     
-    localStorage.setItem('bookings', JSON.stringify(allBookings));
+    storageService.saveBookings(allBookings);
     
     // Cập nhật số lượng đã sử dụng của mã giảm giá
     if (maGiamGiaDangApDung) {

@@ -27,7 +27,7 @@ function loadRoomDetail() {
         return;
     }
     
-    var rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+    var rooms = storageService.ensureRoomsSeeded();
     var room = null;
     for (var i = 0; i < rooms.length; i++) {
         if (rooms[i].id == roomId) {
@@ -86,14 +86,11 @@ function loadRoomDetail() {
 }
 
 function datPhongNgay() {
-    var currentUser = localStorage.getItem('currentUser');
-    if (!currentUser) {
-        if (confirm('Bạn cần đăng nhập để đặt phòng. Chuyển đến trang đăng nhập?')) {
-            var currentUrl = window.location.href;
-            window.location.href = 'login.html?returnUrl=' + encodeURIComponent(currentUrl);
-        }
-        return;
-    }
+    var userInfo = ensureAuthenticated({
+        message: 'Bạn cần đăng nhập để đặt phòng. Chuyển đến trang đăng nhập?',
+        returnUrl: window.location.href
+    });
+    if (!userInfo) return;
     
     if (!currentRoom) {
         alert('Không tìm thấy thông tin phòng!');
@@ -108,8 +105,6 @@ function datPhongNgay() {
     var cap = parseCapacity(currentRoom.capacity);
     var adults = cap.adults;
     var children = cap.children;
-    
-    var userInfo = JSON.parse(currentUser);
     
     var booking = {
         id: 'BK' + Date.now(),
@@ -145,9 +140,7 @@ function datPhongNgay() {
         createdAt: new Date().toISOString()
     };
     
-    var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    bookings.push(booking);
-    localStorage.setItem('bookings', JSON.stringify(bookings));
+    storageService.saveBooking(booking);
     
     // KHÔNG đánh dấu phòng là 'occupied' khi chỉ thêm vào giỏ hàng
     // Phòng chỉ bị đánh dấu là 'occupied' khi thanh toán thành công (status = 'confirmed')

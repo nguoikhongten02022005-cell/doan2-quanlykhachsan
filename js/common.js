@@ -2,31 +2,77 @@
 // FILE CHUNG - Các hàm dùng chung cho toàn bộ website
 // ============================================
 
+// Hàm lấy thông tin người dùng hiện tại (có kiểm tra token)
+function getCurrentUserData() {
+    var currentUser = localStorage.getItem('currentUser');
+    if (!currentUser) return null;
+
+    try {
+        var userData = JSON.parse(currentUser);
+        var sessionToken = localStorage.getItem('authToken');
+
+        // Tự động tạo token giả lập nếu chưa có (phục vụ kiểm tra đăng nhập)
+        if (!sessionToken) {
+            sessionToken = 'token-' + Date.now();
+            localStorage.setItem('authToken', sessionToken);
+        }
+
+        if (!userData.sessionToken) {
+            userData.sessionToken = sessionToken;
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+        }
+
+        return userData;
+    } catch (e) {
+        sessionStorage.clear();
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('authToken');
+        return null;
+    }
+}
+
+// Kiểm tra đăng nhập, nếu chưa thì hỏi chuyển hướng sang trang login
+function ensureAuthenticated(options) {
+    var user = getCurrentUserData();
+    var token = localStorage.getItem('authToken');
+
+    if (user && token) return user;
+
+    // Nếu thiếu token nhưng đã có user, tạo mới token để tiếp tục
+    if (user && !token) {
+        var newToken = 'token-' + Date.now();
+        localStorage.setItem('authToken', newToken);
+        user.sessionToken = newToken;
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        return user;
+    }
+
+    if (options && options.redirect === false) return null;
+
+    var message = (options && options.message) || 'Bạn cần đăng nhập để tiếp tục. Chuyển đến trang đăng nhập?';
+    if (confirm(message)) {
+        var returnUrl = options && options.returnUrl ? options.returnUrl : window.location.href;
+        window.location.href = 'login.html?returnUrl=' + encodeURIComponent(returnUrl);
+    }
+    return null;
+}
+
 // Hàm kiểm tra trạng thái đăng nhập và cập nhật UI
 function checkLoginStatus() {
-    var currentUser = localStorage.getItem('currentUser');
+    var userData = getCurrentUserData();
     var nutDangNhap = document.getElementById('nutDangNhap');
     var userDropdown = document.getElementById('userDropdown');
     var userName = document.getElementById('userName');
-    
+
     if (!nutDangNhap || !userDropdown) return;
-    
-    if (currentUser) {
-        try {
-            var userData = JSON.parse(currentUser);
-            // Đã đăng nhập - ẨN nút đăng nhập, HIỆN dropdown
-            nutDangNhap.style.display = 'none';
-            userDropdown.style.display = 'flex';
-            if (userName) {
-                // Ưu tiên hiển thị name (họ tên đầy đủ)
-                userName.textContent = userData.name || userData.username || 'User';
-            }
-        } catch (e) {
-            // Lỗi parse data - reset về chưa đăng nhập
-            sessionStorage.clear();
-            localStorage.removeItem('currentUser');
-            nutDangNhap.style.display = 'flex';
-            userDropdown.style.display = 'none';
+
+    if (userData) {
+        // Đã đăng nhập - ẨN nút đăng nhập, HIỆN dropdown
+        nutDangNhap.style.display = 'none';
+        userDropdown.style.display = 'flex';
+        if (userName) {
+            // Ưu tiên hiển thị name (họ tên đầy đủ)
+            userName.textContent = userData.name || userData.username || 'User';
         }
     } else {
         // Chưa đăng nhập - HIỆN nút đăng nhập, ẨN dropdown
@@ -55,6 +101,7 @@ function dangXuat(event) {
         sessionStorage.clear();
         localStorage.removeItem('userLogin');
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('authToken');
         window.location.href = 'index.html';
     }
     return false;

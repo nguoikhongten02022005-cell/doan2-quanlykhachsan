@@ -128,10 +128,12 @@ function setupLoginForm() {
                 phone: foundUser.phone || '',
                 role: foundUser.role || 'customer',
                 loginTime: new Date().toISOString(),
-                rememberMe: rememberMe
+                rememberMe: rememberMe,
+                sessionToken: 'token-' + Date.now()
             };
-            
+
             // Chỉ lưu vào currentUser
+            localStorage.setItem('authToken', userData.sessionToken);
             localStorage.setItem('currentUser', JSON.stringify(userData));
             
             showNotification('Đăng nhập thành công! Xin chào ' + foundUser.name, 'success');

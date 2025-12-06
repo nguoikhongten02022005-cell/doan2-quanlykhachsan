@@ -374,8 +374,8 @@ function timKiemPhong() {
         return;
     }
 
-    var rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
-    var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    var rooms = storageService.ensureRoomsSeeded();
+    var bookings = storageService.getBookings();
     
     if (rooms.length === 0) {
         alert('Chưa có phòng nào trong hệ thống!');
