@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Thanh toán đặt phòng khách sạn tại QuickStay. Thanh toán an toàn và nhanh chóng.">
+    <title>Thanh toán - QuickStay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/index.css?v=2025">
+    <link rel="stylesheet" href="../css/thanh-toan.css?v=2025">
+    <link rel="stylesheet" href="../css/chatbot.css?v=2025">
+</head>
+<body>
+    <header class="dau-trang">
+        <nav class="thanh-dieu-huong">
+            <div class="hop-dieu-huong">
+                <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                
+                <ul class="menu-dieu-huong">
+                    <li><a href="index.html">Trang chủ</a></li>
+                    <li><a href="thongtindatphong.html">Thông tin đặt phòng</a></li>
+                    <li><a href="gioithieu.html">Giới thiệu</a></li>
+                    <li><a href="tiennghi.html">Tiện nghi</a></li>
+                </ul>
+                
+                <div class="hanh-dong-dieu-huong">
+                    <button class="nut-dang-nhap" id="nutDangNhap" onclick="window.location.href='login.html'">Đăng Nhập</button>
+                    
+                    <div class="user-dropdown" id="userDropdown" style="display: none;">
+                        <button class="user-dropdown-btn" onclick="toggleUserMenu(event)">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userName">User</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <a href="thongtincanhan.html" class="user-dropdown-item">
+                                <i class="fas fa-user"></i> Thông tin cá nhân
+                            </a>
+                            <a href="#" onclick="return dangXuat(event);" class="user-dropdown-item logout">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <button class="nut-menu-banh" id="nutMenu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="nen-menu-di-dong" id="nenDiDong"></div>
+        <div class="menu-di-dong" id="menuDiDong">
+            <div class="tieu-de-menu-di-dong">
+                <div class="logo">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                <button class="nut-dong-menu" id="dongMenu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="lien-ket-menu-di-dong">
+                <a href="index.html">Trang chủ</a>
+                <a href="thongtindatphong.html">Thông tin đặt phòng</a>
+                <a href="gioithieu.html">Giới thiệu</a>
+                <a href="tiennghi.html">Tiện nghi</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="noi-dung-chinh">
+        <div class="hop-chua-thanh-toan">
+
+            <div class="hop-chua-noi-dung">
+                <div class="cot-trai">
+                    <h1 class="tieu-de-trang">Thông tin thanh toán</h1>
+                    
+                    <div class="khu-thong-tin">
+                        <h2 class="tieu-de-khu">
+                            <i class="fas fa-user"></i>
+                            Thông tin khách hàng
+                        </h2>
+                        <form class="form-thong-tin" id="formThanhToan">
+                            <div class="hang-nhap">
+                                <div class="truong-nhap">
+                                    <label for="hoTen">Họ và tên *</label>
+                                    <input type="text" id="hoTen" name="hoTen" required>
+                                </div>
+                                <div class="truong-nhap">
+                                    <label for="email">Email *</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                            </div>
+                            
+                            <div class="hang-nhap">
+                                <div class="truong-nhap">
+                                    <label for="soDienThoai">Số điện thoại *</label>
+                                    <input type="tel" id="soDienThoai" name="soDienThoai" required>
+                                </div>
+                                <div class="truong-nhap">
+                                    <label for="cmnd">CMND/CCCD *</label>
+                                    <input type="text" id="cmnd" name="cmnd" required>
+                                </div>
+                            </div>
+                            
+                            <div class="truong-nhap">
+                                <label for="ghiChu">Ghi chú đặc biệt</label>
+                                <textarea id="ghiChu" name="ghiChu" rows="3" placeholder="Yêu cầu đặc biệt cho chuyến đi của bạn..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="khu-thong-tin">
+                        <h2 class="tieu-de-khu">
+                            <i class="fas fa-credit-card"></i>
+                            Phương thức thanh toán
+                        </h2>
+                        
+                        <div class="phuong-thuc-thanh-toan">
+                            <div class="phuong-thuc" data-phuong-thuc="ngan-hang">
+                                <input type="radio" id="ngan-hang" name="phuongThuc" value="ngan-hang" checked>
+                                <label for="ngan-hang">
+                                    <i class="fas fa-university"></i>
+                                    <span>Chuyển khoản ngân hàng</span>
+                                </label>
+                            </div>
+                            
+                            <div class="phuong-thuc" data-phuong-thuc="tien-mat">
+                                <input type="radio" id="tien-mat" name="phuongThuc" value="tien-mat">
+                                <label for="tien-mat">
+                                    <i class="fas fa-hotel"></i>
+                                    <span>Thanh toán tại khách sạn</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-the" id="formNganHang">
+                            <div class="thong-tin-chuyen-khoan">
+                                <h3 style="margin-bottom: 15px; color: #333; font-size: 16px; text-align: center;">
+                                    <i class="fas fa-info-circle"></i> Quét mã QR để thanh toán
+                                </h3>
+                                <div style="text-align: center; padding: 20px;">
+                                    <img src="../img/qrcodethanhtoan.jpg" alt="QR Code Thanh Toán" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                </div>
+                                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-top: 15px;">
+                                    <p style="margin: 0; color: #856404; font-size: 14px;">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                        <strong>Lưu ý:</strong> Vui lòng ghi rõ <span style="color: #dc3545; font-weight: 600;">Mã đặt phòng + Họ tên</span> khi chuyển khoản
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-the" id="formTienMat" style="display: none;">
+                            <div class="thong-tin-chuyen-khoan">
+                                <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #4caf50;">
+                                    <p style="margin: 0; color: #2e7d32;">
+                                        <i class="fas fa-check-circle"></i> 
+                                        Bạn sẽ thanh toán trực tiếp tại quầy lễ tân khi nhận phòng.
+                                    </p>
+                                    <p style="margin: 12px 0 0 0; color: #555; font-size: 14px;">
+                                        Chúng tôi chấp nhận: Tiền mặt, thẻ ATM, thẻ tín dụng
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cot-phai">
+                    <div class="tom-tat-don-hang">
+                        <h2 class="tieu-de-tom-tat">
+                            <i class="fas fa-file-alt"></i>
+                            Tóm tắt đơn hàng
+                        </h2>
+                        
+                        <div class="danh-sach-phong" id="danhSachPhong">
+                        </div>
+                        
+                        <div class="khu-ma-giam-gia" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <h3 style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-tag" style="color: #dc2626;"></i>
+                                Mã giảm giá
+                            </h3>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" 
+                                       id="inputMaGiamGia" 
+                                       placeholder="Nhập mã giảm giá" 
+                                       style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;">
+                                <button id="nutApDungMa" 
+                                        onclick="apDungMaGiamGia()"
+                                        style="padding: 12px 20px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.3s;">
+                                    <i class="fas fa-check"></i> Áp dụng
+                                </button>
+                            </div>
+                            <div id="thongBaoMaGiamGia" style="margin-top: 10px; font-size: 13px; display: none;"></div>
+                        </div>
+                        
+                        <div class="tong-tien">
+                            <div class="dong-tong">
+                                <span>Tạm tính:</span>
+                                <span id="tamTinh">0 ₫</span>
+                            </div>
+                            <div class="dong-tong">
+                                <span>Phí dịch vụ:</span>
+                                <span id="phiDichVu">0 ₫</span>
+                            </div>
+                            <div class="dong-tong">
+                                <span>Thuế VAT (10%):</span>
+                                <span id="thueVAT">0 ₫</span>
+                            </div>
+                            <div class="dong-tong" id="dongGiamGia" style="display: none; color: #059669;">
+                                <span>
+                                    <i class="fas fa-tag"></i> Giảm giá:
+                                </span>
+                                <span id="tienGiamGia">-0 ₫</span>
+                            </div>
+                            <div class="dong-tong-cong">
+                                <span>Tổng cộng:</span>
+                                <span id="tongCong">0 ₫</span>
+                            </div>
+                        </div>
+                        
+                        <button class="nut-thanh-toan" id="nutThanhToan">
+                            <i class="fas fa-lock"></i>
+                            <span>Thanh toán ngay</span>
+                        </button>
+                        
+                        <div class="thong-tin-bao-mat">
+                            <div class="thong-bao-bao-mat">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Thanh toán được bảo mật 256-bit SSL</span>
+                            </div>
+                            <div class="thong-bao-bao-mat">
+                                <i class="fas fa-undo"></i>
+                                <span>Miễn phí hủy trong 24h</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="chan-trang">
+        <div class="hop-chan-trang">
+            <div class="khu-chan-trang">
+                <div class="logo-chan-trang">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                <p class="mo-ta-chan-trang">
+                    Dịch vụ đặt phòng khách sạn hàng đầu gần bạn. 
+                    Từ khách sạn sang trọng đến villa và 
+                    cung cấp dịch vụ tốt nhất.
+                </p>
+                <div class="lien-ket-mxh">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div class="khu-chan-trang">
+                <h3>CÔNG TY</h3>
+                <ul>
+                    <li><a href="#">Giới Thiệu</a></li>
+                    <li><a href="#">Nghề Nghiệp</a></li>
+                    <li><a href="#">Tin Tức</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Đối Tác</a></li>
+                </ul>
+            </div>
+
+            <div class="khu-chan-trang">
+                <h3>HỖ TRỢ</h3>
+                <ul>
+                    <li><a href="#">Trung Tâm Trợ Giúp</a></li>
+                    <li><a href="#">Thông Tin An Toàn</a></li>
+                    <li><a href="#">Tùy Chọn Hủy</a></li>
+                    <li><a href="#">Liên Hệ</a></li>
+                    <li><a href="#">Khả Năng Tiếp Cận</a></li>
+                </ul>
+            </div>
+
+            <div class="khu-chan-trang newsletter-section">
+                <h3>CẬP NHẬT MỚI</h3>
+                <p>Đăng ký nhận bản tin để nhận thông tin khuyến mãi và ưu đãi đặc biệt.</p>
+                <div class="bieu-mau-ban-tin">
+                    <input type="email" id="newsletterEmail" placeholder="Email của bạn" required>
+                    <button type="button" onclick="handleNewsletter(this)">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chan-trang-duoi">
+            <div class="hop-chan-trang">
+                <p>&copy; 2025 QuickStay. Tất cả quyền được bảo lưu.</p>
+                <div class="lien-ket-chan-trang">
+                    <a href="#">Quyền Riêng Tư</a>
+                    <a href="#">Điều Khoản</a>
+                    <a href="#">Sơ Đồ Trang</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/common.js?v=2025"></script>
+    <script src="../js/thanh-toan.js?v=2025" defer></script>
+    
+    <!-- Chatbot Widget -->
+    <div class="chatbot-container">
+        <button class="chatbot-button" id="chatbotButton">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3><i class="fas fa-robot"></i> Trợ lý AI QuickStay</h3>
+                <button class="chatbot-close" id="chatbotClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input-area">
+                <input 
+                    type="text" 
+                    class="chatbot-input" 
+                    id="chatbotInput" 
+                    placeholder="Nhập câu hỏi của bạn..."
+                >
+                <button class="chatbot-send" id="chatbotSend">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/chatbot.js?v=2025"></script>
+</body>
+</html>
