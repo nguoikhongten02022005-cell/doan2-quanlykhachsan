@@ -1,254 +1,199 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tìm Kiếm Phòng - QuickStay Hotel</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/index.css?v=2025">
-    <link rel="stylesheet" href="../css/tim-kiem-phong.css">
-</head>
-<body>
-    <header class="dau-trang">
-        <nav class="thanh-dieu-huong">
-            <div class="hop-dieu-huong">
-                <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer">
-                    <i class="fas fa-bed"></i>
-                    <span>QuickStay</span>
-                </div>
-                
-                <ul class="menu-dieu-huong">
-                    <li><a href="index.html">Trang chủ</a></li>
-                    <li><a href="thongtindatphong.html">Thông tin đặt phòng</a></li>
-                    <li><a href="gioithieu.html">Giới thiệu</a></li>
-                    <li><a href="tiennghi.html">Tiện nghi</a></li>
-                </ul>
-                
-                <div class="hanh-dong-dieu-huong">
-                    <button class="nut-dang-nhap" id="nutDangNhap" onclick="window.location.href='login.html'">Đăng Nhập</button>
-                    
-                    <div class="user-dropdown" id="userDropdown" style="display: none;">
-                        <button class="user-dropdown-btn" onclick="toggleUserMenu(event)">
-                            <i class="fas fa-user-circle"></i>
-                            <span id="userName">User</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <div class="user-dropdown-menu" id="userDropdownMenu">
-                            <a href="thongtincanhan.html" class="user-dropdown-item">
-                                <i class="fas fa-user"></i> Thông tin cá nhân
-                            </a>
-                            <a href="#" onclick="return dangXuat(event);" class="user-dropdown-item logout">
-                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <button class="nut-menu-banh" id="nutMenu">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
-        </nav>
-        <div class="nen-menu-di-dong" id="nenDiDong"></div>
-        <div class="menu-di-dong" id="menuDiDong">
-            <div class="tieu-de-menu-di-dong">
-                <div class="logo">
-                    <i class="fas fa-bed"></i>
-                    <span>QuickStay</span>
-                </div>
-                <button class="nut-dong-menu" id="dongMenu">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <nav class="lien-ket-menu-di-dong">
-                <a href="index.html">Trang chủ</a>
-                <a href="thongtindatphong.html">Thông tin đặt phòng</a>
-                <a href="gioithieu.html">Giới thiệu</a>
-                <a href="tiennghi.html">Tiện nghi</a>
-            </nav>
-        </div>
-    </header>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Lấy tham số từ URL khi trang vừa tải xong
+    const urlParams = new URLSearchParams(window.location.search);
+    const checkinDate = urlParams.get('checkin');
+    const checkoutDate = urlParams.get('checkout');
+    // Mặc định là 1 người lớn, 0 trẻ em nếu không có tham số
+    const adults = parseInt(urlParams.get('adults')) || 1;
+    const children = parseInt(urlParams.get('children')) || 0;
 
-    <div class="thanh-tim-kiem-chinh">
-        <div class="hop-chua-thanh-tim-kiem">
-            <div class="form-tim-kiem-chinh">
-                <div class="truong-ngay-thang">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span id="hienThiNgayTim">Ngày nhận phòng – Ngày trả phòng</span>
-                </div>
-                
-                <div class="truong-khach-phong" id="truongKhachTim">
-                    <i class="fas fa-user"></i>
-                    <span id="hienThiKhachTim">1 người lớn · 0 trẻ em · 1 phòng</span>
-                    
-                    <div class="hop-khach" id="hopKhachTim">
-                        <div class="hang-khach">
-                            <div class="nhan-khach">Người lớn</div>
-                            <div class="dieu-khien-khach">
-                                <button type="button" class="nut-khach minus" data-target="nguoiLon">−</button>
-                                <span class="so-khach" id="soNguoiLonTim">1</span>
-                                <button type="button" class="nut-khach plus" data-target="nguoiLon">+</button>
-                            </div>
-                        </div>
-                        
-                        <div class="hang-khach">
-                            <div class="nhan-khach">Trẻ em</div>
-                            <div class="dieu-khien-khach">
-                                <button type="button" class="nut-khach minus" data-target="treEm">−</button>
-                                <span class="so-khach" id="soTreEmTim">0</span>
-                                <button type="button" class="nut-khach plus" data-target="treEm">+</button>
-                            </div>
-                        </div>
-                        
-                        <div class="hang-khach">
-                            <div class="nhan-khach">Phòng</div>
-                            <div class="dieu-khien-khach">
-                                <button type="button" class="nut-khach minus" data-target="phong">−</button>
-                                <span class="so-khach" id="soPhongTim">1</span>
-                                <button type="button" class="nut-khach plus" data-target="phong">+</button>
-                            </div>
-                        </div>
-                        
-                        <button type="button" class="nut-xong-khach" id="nutXongKhachTim">Xong</button>
-                    </div>
-                </div>
-                
-                <button class="nut-tim-kiem-chinh" id="nutTimKiemChinh">
-                    Tìm
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <main class="noi-dung-chinh">
-        <div class="hop-chua-tim-kiem">
-            <div class="noi-dung-ket-qua" id="noiDungKetQua" style="display: none;">
-                <div class="header-ket-qua" id="searchResultsHeader">
-                    <h1><span id="soLuongKetQua">0</span> khách sạn được tìm thấy</h1>
-                    <div class="thanh-dieu-khien">
-                        <div class="sap-xep">
-                            <span>Sắp xếp theo:</span>
-                            <select id="selectSapXep">
-                                <option value="top-picks">Lựa chọn hàng đầu cho lưu trú dài hạn</option>
-                                <option value="price-low">Giá từ thấp đến cao</option>
-                                <option value="price-high">Giá từ cao đến thấp</option>
-                                <option value="rating">Đánh giá</option>
-                            </select>
-                        </div>
-                        <div class="chuyen-doi-xem">
-                            <button class="nut-xem active" data-view="list">Danh sách</button>
-                            <button class="nut-xem" data-view="grid">Lưới</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="danh-sach-ket-qua" id="searchResultsContainer">
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="chan-trang">
-        <div class="hop-chan-trang">
-            <div class="khu-chan-trang">
-                <div class="logo-chan-trang">
-                    <i class="fas fa-bed"></i>
-                    <span>QuickStay</span>
-                </div>
-                <p class="mo-ta-chan-trang">
-                    Dịch vụ đặt phòng khách sạn hàng đầu gần bạn. 
-                    Từ khách sạn sang trọng đến villa và 
-                    cung cấp dịch vụ tốt nhất.
-                </p>
-                <div class="lien-ket-mxh">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
-                </div>
-            </div>
-
-            <div class="khu-chan-trang">
-                <h3>CÔNG TY</h3>
-                <ul>
-                    <li><a href="#">Giới Thiệu</a></li>
-                    <li><a href="#">Nghề Nghiệp</a></li>
-                    <li><a href="#">Tin Tức</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Đối Tác</a></li>
-                </ul>
-            </div>
-
-            <div class="khu-chan-trang">
-                <h3>HỖ TRỢ</h3>
-                <ul>
-                    <li><a href="#">Trung Tâm Trợ Giúp</a></li>
-                    <li><a href="#">Thông Tin An Toàn</a></li>
-                    <li><a href="#">Tùy Chọn Hủy</a></li>
-                    <li><a href="#">Liên Hệ</a></li>
-                    <li><a href="#">Khả Năng Tiếp Cận</a></li>
-                </ul>
-            </div>
-
-            <div class="khu-chan-trang newsletter-section">
-                <h3>CẬP NHẬT MỚI</h3>
-                <p>Đăng ký nhận bản tin để nhận thông tin khuyến mãi và ưu đãi đặc biệt.</p>
-                <div class="bieu-mau-ban-tin">
-                    <input type="email" placeholder="Email của bạn">
-                    <button type="submit">
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="chan-trang-duoi">
-            <div class="hop-chan-trang">
-                <p>&copy; 2025 QuickStay. Tất cả quyền được bảo lưu.</p>
-                <div class="lien-ket-chan-trang">
-                    <a href="#">Quyền Riêng Tư</a>
-                    <a href="#">Điều Khoản</a>
-                    <a href="#">Sơ Đồ Trang</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <script src="../js/storageService.js?v=2025"></script>
-    <script src="../js/common.js?v=2025"></script>
-    <script src="../js/tim-kiem-phong.js"></script>
+    // 2. Hiển thị lại thông tin đã chọn lên thanh tìm kiếm
+    if (checkinDate && checkoutDate) {
+        const hienThiNgay = document.getElementById('hienThiNgayTim');
+        if (hienThiNgay) {
+            hienThiNgay.textContent = `${formatDateVN(checkinDate)} — ${formatDateVN(checkoutDate)}`;
+        }
+    }
     
-    <!-- Chatbot Widget -->
-    <div class="chatbot-container">
-        <button class="chatbot-button" id="chatbotButton">
-            <i class="fas fa-comments"></i>
-        </button>
-        <div class="chatbot-window" id="chatbotWindow">
-            <div class="chatbot-header">
-                <h3><i class="fas fa-robot"></i> Trợ lý AI QuickStay</h3>
-                <button class="chatbot-close" id="chatbotClose">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="chatbot-messages" id="chatbotMessages"></div>
-            <div class="chatbot-input-area">
-                <input 
-                    type="text" 
-                    class="chatbot-input" 
-                    id="chatbotInput" 
-                    placeholder="Nhập câu hỏi của bạn..."
-                >
-                <button class="chatbot-send" id="chatbotSend">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+    const hienThiKhach = document.getElementById('hienThiKhachTim');
+    if (hienThiKhach) {
+        hienThiKhach.textContent = `${adults} người lớn · ${children} trẻ em`;
+    }
 
-    <link rel="stylesheet" href="../css/chatbot.css">
-    <script src="../js/chatbot.js"></script>
-</body>
-</html>
+    // 3. Thực hiện tìm kiếm và lọc phòng (chỉ khi có đủ thông tin)
+    if (checkinDate && checkoutDate) {
+        performSearch(checkinDate, checkoutDate, adults, children);
+    } else {
+        // Hiển thị thông báo nếu thiếu thông tin
+        const container = document.getElementById('searchResultsContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="thong-bao-khong-tim-thay">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>Vui lòng chọn ngày nhận và trả phòng</h3>
+                    <p>Bạn cần chọn ngày nhận và trả phòng để tìm kiếm.</p>
+                    <a href="index.html" class="nut-xem-tinh-trang">Quay lại trang chủ</a>
+                </div>`;
+        }
+    }
+});
+
+// Hàm định dạng ngày hiển thị (VD: 01/01/2025)
+function formatDateVN(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+
+// Hàm chuẩn hóa ngày (chỉ lấy phần ngày, bỏ qua giờ/phút/giây)
+function normalizeDate(dateString) {
+    if (!dateString) return null;
+    // Nếu là định dạng YYYY-MM-DD, parse trực tiếp
+    if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return new Date(dateString + 'T00:00:00');
+    }
+    // Nếu là định dạng khác, parse và reset về 00:00:00
+    const date = new Date(dateString);
+    date.setHours(0, 0, 0, 0);
+    return date;
+}
+
+// Hàm thực hiện logic tìm kiếm
+function performSearch(checkin, checkout, adults, children) {
+    // Lấy dữ liệu phòng và đơn hàng từ localStorage
+    const rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    
+    // Chuẩn hóa ngày để so sánh chính xác (chỉ so sánh ngày, không so sánh giờ)
+    const searchStart = normalizeDate(checkin);
+    const searchEnd = normalizeDate(checkout);
+    
+    // Kiểm tra tính hợp lệ của ngày
+    if (!searchStart || !searchEnd || searchStart >= searchEnd) {
+        const container = document.getElementById('searchResultsContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="thong-bao-khong-tim-thay">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Ngày không hợp lệ</h3>
+                    <p>Ngày trả phòng phải sau ngày nhận phòng.</p>
+                    <a href="index.html" class="nut-xem-tinh-trang">Quay lại trang chủ</a>
+                </div>`;
+        }
+        return;
+    }
+
+    // Bắt đầu lọc
+    const availableRooms = rooms.filter(room => {
+        // A. Lọc theo trạng thái phòng (bảo trì thì bỏ qua)
+        if (room.status === 'maintenance') return false;
+
+        // B. Lọc theo sức chứa
+        // Parse capacity từ chuỗi của phòng (VD: "2 người lớn, 1 trẻ em")
+        let roomAdults = 2; // Mặc định
+        if (room.adults) {
+            roomAdults = parseInt(room.adults);
+        } else if (room.capacity) {
+            const match = room.capacity.toString().match(/(\d+)\s*người lớn/);
+            if (match) roomAdults = parseInt(match[1]);
+        }
+        
+        // Nếu số khách lớn hơn sức chứa phòng quá nhiều -> Bỏ qua
+        if (adults > roomAdults + 1) return false; // Cho phép ghép thêm 1 người
+
+        // C. Kiểm tra trùng lịch (Logic quan trọng nhất)
+        // Nếu có bất kỳ đơn đặt nào trùng thời gian -> Loại bỏ phòng này
+        const isBooked = bookings.some(booking => {
+            // Chỉ kiểm tra các đơn của đúng phòng này và chưa bị hủy
+            if (String(booking.roomId) !== String(room.id) || booking.status === 'cancelled') {
+                return false;
+            }
+            
+            // Lấy ngày từ booking (hỗ trợ cả checkIn/checkOut và checkin/checkout)
+            const bookingStart = normalizeDate(booking.checkIn || booking.checkin);
+            const bookingEnd = normalizeDate(booking.checkOut || booking.checkout);
+            
+            if (!bookingStart || !bookingEnd) return false;
+
+            // Logic kiểm tra 2 khoảng thời gian có giao nhau không:
+            // Khoảng thời gian giao nhau khi:
+            // - Ngày bắt đầu tìm kiếm < Ngày kết thúc đặt phòng VÀ
+            // - Ngày kết thúc tìm kiếm > Ngày bắt đầu đặt phòng
+            // Lưu ý: Cho phép checkout và checkin cùng ngày (không coi là trùng)
+            return (searchStart < bookingEnd && searchEnd > bookingStart);
+        });
+
+        return !isBooked; // Giữ lại nếu KHÔNG bị trùng lịch
+    });
+
+    // 4. Hiển thị kết quả ra màn hình
+    displayResults(availableRooms);
+}
+
+function displayResults(rooms) {
+    const container = document.getElementById('searchResultsContainer');
+    const headerCount = document.getElementById('soLuongKetQua');
+    const resultSection = document.getElementById('noiDungKetQua');
+
+    if (headerCount) headerCount.textContent = rooms.length;
+    
+    // Đảm bảo khung kết quả hiển thị (vì trong HTML bạn để display: none)
+    if (resultSection) resultSection.style.display = 'block';
+
+    if (rooms.length === 0) {
+        container.innerHTML = `
+            <div class="thong-bao-khong-tim-thay">
+                <i class="fas fa-search"></i>
+                <h3>Không tìm thấy phòng trống</h3>
+                <p>Rất tiếc, không có phòng nào phù hợp trong khoảng thời gian này.</p>
+                <a href="index.html" class="nut-xem-tinh-trang">Quay lại trang chủ</a>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+    rooms.forEach(room => {
+        // Format giá tiền
+        const price = new Intl.NumberFormat('vi-VN').format(room.price) + ' ₫';
+        
+        // Tạo danh sách tiện nghi ngắn gọn (lấy 3 cái đầu)
+        let amenitiesHtml = '';
+        if (room.amenities) {
+            const list = room.amenities.split(',').slice(0, 3);
+            list.forEach(am => {
+                amenitiesHtml += `<span>${am.trim()}</span>`;
+            });
+        }
+
+        html += `
+            <div class="the-phong-tim-kiem" onclick="window.location.href='room-detail.html?id=${room.id}'">
+                <div class="noi-dung-the-phong">
+                    <div class="anh-phong-tim-kiem">
+                        <img src="${room.image}" alt="${room.name}" onerror="this.src='../img/khachsan1(1).jpg'">
+                        <span class="badge-giam-gia">Ưu đãi</span>
+                    </div>
+                    <div class="thong-tin-phong-tim-kiem">
+                        <div>
+                            <h3 class="ten-phong-tim-kiem">${room.name}</h3>
+                            <p class="suc-chua-phong">${room.adults || 2} người lớn, ${room.children || 0} trẻ em</p>
+                        </div>
+                        
+                        <div class="tien-ich-phong-tim-kiem">
+                            ${amenitiesHtml}
+                            <span>+ thêm</span>
+                        </div>
+                        
+                        <div>
+                            <div class="gia-phong-tim-kiem">${price}</div>
+                            <div class="nut-hanh-dong">
+                                <button class="nut-chi-tiet">Xem chi tiết</button>
+                                <button class="nut-dat-ngay">Đặt ngay</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
