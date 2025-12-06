@@ -32,23 +32,29 @@ function khoiTaoDatePickerTimKiem() {
                     <i class="fas fa-chevron-left"></i>
                 </button>
                 
-                <div class="lich-kep-tim" style="display: flex; gap: 30px; flex: 1;">
-                    <div class="thang-tim" style="flex: 1;">
-                        <div class="tieu-de-thang-tim" id="tieuDeThang1Tim" style="text-align: center; font-weight: 600; font-size: 16px; margin-bottom: 15px; color: #333; text-transform: capitalize;"></div>
-                        <div class="luoi-lich-tim" id="lich1Tim" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;"></div>
+                <div class="lich-kep">
+                    <div class="thang">
+                        <div class="tieu-de-thang" id="tieuDeThang1Tim"></div>
+                        <div class="luoi-lich" id="lich1Tim"></div>
                     </div>
                     
-                    <div class="thang-tim" style="flex: 1;">
-                        <div class="tieu-de-thang-tim" id="tieuDeThang2Tim" style="text-align: center; font-weight: 600; font-size: 16px; margin-bottom: 15px; color: #333; text-transform: capitalize;"></div>
-                        <div class="luoi-lich-tim" id="lich2Tim" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;"></div>
+                    <div class="thang">
+                        <div class="tieu-de-thang" id="tieuDeThang2Tim"></div>
+                        <div class="luoi-lich" id="lich2Tim"></div>
                     </div>
                 </div>
                 
-                <button type="button" class="dieu-huong-thang-tim" id="thangSauTim" style="background: #f5f5f5; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; flex-shrink: 0;"
-                        onmouseenter="this.style.background='#1976d2'; this.style.color='#fff'"
-                        onmouseleave="this.style.background='#f5f5f5'; this.style.color='#333'">
+                <button type="button" class="dieu-huong-thang" id="thangSauTim">
                     <i class="fas fa-chevron-right"></i>
                 </button>
+            </div>
+            
+            <div class="nut-chon-nhanh">
+                <button type="button" class="nut-nhanh active">Ngày chính xác</button>
+                <button type="button" class="nut-nhanh">± 1 ngày</button>
+                <button type="button" class="nut-nhanh">± 2 ngày</button>
+                <button type="button" class="nut-nhanh">± 3 ngày</button>
+                <button type="button" class="nut-nhanh">± 7 ngày</button>
             </div>
         </div>
     `;
@@ -56,6 +62,7 @@ function khoiTaoDatePickerTimKiem() {
     truongNgay.style.position = 'relative';
     truongNgay.insertAdjacentHTML('beforeend', popupHTML);
     
+    // Logic ẩn hiện popup
     truongNgay.addEventListener('click', function(e) {
         e.stopPropagation();
         var popup = document.getElementById('hopLichTim');
@@ -63,11 +70,10 @@ function khoiTaoDatePickerTimKiem() {
         
         if (khachPopup) khachPopup.style.display = 'none';
         
-        if (popup && (popup.style.display === 'none' || !popup.style.display || popup.style.display === '')) {
-            popup.style.display = 'block';
-            taoHaiLichTim();
-        } else if (popup) {
-            popup.style.display = 'none';
+        if (popup) {
+            var isHidden = popup.style.display === 'none' || popup.style.display === '';
+            popup.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) taoHaiLichTim();
         }
     });
     
@@ -78,6 +84,7 @@ function khoiTaoDatePickerTimKiem() {
         }
     });
     
+    // Gán sự kiện cho nút chuyển tháng
     document.getElementById('thangTruocTim').addEventListener('click', function(e) {
         e.stopPropagation();
         thang1Tim.setMonth(thang1Tim.getMonth() - 1);
@@ -113,74 +120,69 @@ function taoLichTim(calendarId, monthDate, titleId) {
     title.textContent = monthNames[month] + ' năm ' + year;
     calendar.innerHTML = '';
     
+    // Tạo tiêu đề ngày (T2, T3...)
     var dayNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
     for (var i = 0; i < dayNames.length; i++) {
         var header = document.createElement('div');
-        header.className = 'tieu-de-ngay-tim';
+        header.className = 'tieu-de-ngay'; // Class từ index.css
         header.textContent = dayNames[i];
-        header.style.cssText = 'text-align: center; font-weight: 600; padding: 8px; color: #666; font-size: 12px;';
         calendar.appendChild(header);
     }
     
+    // Tính toán ngày
     var firstDay = new Date(year, month, 1);
     var lastDate = new Date(year, month + 1, 0).getDate();
     var startDay = firstDay.getDay();
     startDay = startDay === 0 ? 6 : startDay - 1;
     
+    // Các ô trống đầu tháng
     for (var j = 0; j < startDay; j++) {
         var emptyDay = document.createElement('div');
-        emptyDay.className = 'o-lich-tim';
+        emptyDay.className = 'o-lich vo-hieu'; // Class từ index.css
         calendar.appendChild(emptyDay);
     }
     
     var today = new Date();
     today.setHours(0, 0, 0, 0);
     
+    // Render các ngày trong tháng
     for (var day = 1; day <= lastDate; day++) {
         var dayElement = document.createElement('div');
-        dayElement.className = 'o-lich-tim';
+        dayElement.className = 'o-lich'; // Class cơ bản
         dayElement.textContent = day;
-        dayElement.style.cssText = 'padding: 10px; text-align: center; cursor: pointer; border-radius: 4px; transition: all 0.2s;';
         
         var cellDate = new Date(year, month, day);
         cellDate.setHours(0, 0, 0, 0);
         
+        // Logic CSS giống hệt index.js
         if (cellDate.getTime() === today.getTime()) {
-            dayElement.style.background = '#e3f2fd';
-            dayElement.style.fontWeight = '600';
+            dayElement.classList.add('hom-nay');
         }
         
         if (cellDate < today) {
-            dayElement.style.color = '#ccc';
-            dayElement.style.cursor = 'not-allowed';
+            dayElement.classList.add('qua-khu'); // Vô hiệu hóa ngày quá khứ
         } else {
+            // Logic chọn ngày
             if (nhanPhongTim && cellDate.getTime() === nhanPhongTim.getTime()) {
-                dayElement.style.background = '#1976d2';
-                dayElement.style.color = '#fff';
-                dayElement.style.fontWeight = '600';
+                dayElement.classList.add('bat-dau'); // Hoặc 'duoc-chon'
+                dayElement.classList.add('duoc-chon');
             }
             
             if (traPhongTim && cellDate.getTime() === traPhongTim.getTime()) {
-                dayElement.style.background = '#1976d2';
-                dayElement.style.color = '#fff';
-                dayElement.style.fontWeight = '600';
+                dayElement.classList.add('ket-thuc'); // Hoặc 'duoc-chon'
+                dayElement.classList.add('duoc-chon');
             }
             
             if (nhanPhongTim && traPhongTim && 
                 cellDate > nhanPhongTim && cellDate < traPhongTim) {
-                dayElement.style.background = '#bbdefb';
+                dayElement.classList.add('trong-khoang');
             }
             
+            // Gán sự kiện click
             (function(date) {
                 dayElement.addEventListener('click', function(e) {
                     e.stopPropagation();
                     chonNgayTim(new Date(date));
-                });
-                
-                dayElement.addEventListener('mouseenter', function() {
-                    if (cellDate >= today) {
-                        this.style.background = this.style.background || '#f5f5f5';
-                    }
                 });
             })(cellDate);
         }
@@ -374,8 +376,8 @@ function timKiemPhong() {
         return;
     }
 
-    var rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
-    var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    var rooms = storageService.ensureRoomsSeeded();
+    var bookings = storageService.getBookings();
     
     if (rooms.length === 0) {
         alert('Chưa có phòng nào trong hệ thống!');
@@ -496,78 +498,72 @@ function hienThiKetQuaTimKiem(rooms) {
 }
 
 function taoThePhongTimKiem(room) {
-    // 1. Tính toán sức chứa
     var cap = parseCapacity(room);
     var adults = cap.adults.toString();
     var children = cap.children.toString();
     
-    // 2. Tính toán giá và tổng tiền
     var price = formatPrice(room.price);
     var soDem = nhanPhongTim && traPhongTim ? Math.ceil((traPhongTim - nhanPhongTim) / (1000 * 60 * 60 * 24)) : 1;
-    if (soDem <= 0) soDem = 1; // Fix lỗi ngày
     var tongTien = formatPrice(room.price * soDem);
     
-    // 3. Xử lý tiện ích (Dùng đúng chuẩn class .tien-ich như trang chủ)
+    // Xử lý danh sách tiện ích của phòng (amenities)
     var amenitiesArray = room.amenities ? room.amenities.split(',') : [];
-    var amenitiesHTML = '';
-    
-    // Chỉ lấy tối đa 4 tiện ích để thẻ không bị dài quá
-    for (var j = 0; j < Math.min(amenitiesArray.length, 4); j++) {
-        var amenity = amenitiesArray[j].trim();
-        var icon = 'fas fa-check';
-        
-        // Map icon giống trang chủ
-        if (amenity.toLowerCase().includes('wifi')) icon = 'fas fa-wifi';
-        else if (amenity.toLowerCase().includes('tv')) icon = 'fas fa-tv';
-        else if (amenity.toLowerCase().includes('điều hòa')) icon = 'fas fa-snowflake';
-        else if (amenity.toLowerCase().includes('minibar')) icon = 'fas fa-glass-martini';
-        else if (amenity.toLowerCase().includes('bàn')) icon = 'fas fa-laptop';
-        else if (amenity.toLowerCase().includes('tắm')) icon = 'fas fa-bath';
+    for (var i = 0; i < amenitiesArray.length; i++) {
+        amenitiesArray[i] = amenitiesArray[i].trim();
+    }
 
-        // QUAN TRỌNG: Dùng class "tien-ich" chuẩn của index.css
-        amenitiesHTML += `<span class="tien-ich"><i class="${icon}"></i> ${amenity}</span>`;
+    // Hiển thị tiện ích với style màu xanh dương
+    var amenitiesHTML = '';
+    for (var j = 0; j < amenitiesArray.length; j++) {
+        var amenity = amenitiesArray[j];
+        var icon = 'fas fa-check';
+        if (amenity.toLowerCase().indexOf('wifi') !== -1) icon = 'fas fa-wifi';
+        else if (amenity.toLowerCase().indexOf('tv') !== -1) icon = 'fas fa-tv';
+        else if (amenity.toLowerCase().indexOf('điều hòa') !== -1) icon = 'fas fa-snowflake';
+        else if (amenity.toLowerCase().indexOf('minibar') !== -1 || amenity.toLowerCase().indexOf('mini bar') !== -1) icon = 'fas fa-glass-martini';
+        amenitiesHTML += '<span style="color: #1976d2; font-size: 14px; padding: 8px 14px; background: #ebf3ff; border-radius: 7px; display: inline-flex; align-items: center; gap: 7px; line-height: 1.5; border: 1px solid #b3d9ff;"><i class="' + icon + '" style="font-size: 14px;"></i> ' + amenity + '</span>';
     }
     
-    // 4. Trả về HTML giống hệt cấu trúc index.js
-    // Lưu ý: Đã bỏ các style màu xanh dương và khung "Phù hợp"
-    return `
+    var html = `
         <div class="the-phong" onclick="datPhongNgay(${room.id})" style="cursor: pointer;">
             <div class="anh-phong">
-                <img src="${room.image}" alt="${room.name}" onerror="this.src='../img/khachsan1(1).jpg'">
+                <img src="${room.image || '../img/khachsan1(1).jpg'}" alt="${room.name}" onerror="this.src='../img/khachsan1(1).jpg'">
                 <div class="nhan-phong">Tầng ${room.floor || '1'}</div>
             </div>
             <div class="noi-dung-phong">
                 <div class="tieu-de-phong">
                     <h3 class="ten-phong">${room.name}</h3>
-                    
                     <div class="gia-phong">${price}</div>
-                    ${soDem > 1 ? `<div style="font-size: 13px; color: #d32f2f; font-weight: 500;">(Tổng ${soDem} đêm: ${tongTien})</div>` : ''}
+                    <div style="color: #666; font-size: 14px; margin-top: 4px;">
+                        <i class="fas fa-calculator" style="margin-right: 5px; color: #1976d2;"></i> ${soDem} đêm = <strong style="color: #1976d2;">${tongTien}</strong>
+                    </div>
                 </div>
-                
                 <div class="loai-phong">
                     <span class="dia-diem-phong">${room.hotel || 'QuickStay Hotel'}</span>
-                    <span class="hang-phong">${room.type || 'Standard'}</span>
+                    <span class="hang-phong">Phòng ${room.roomNumber || room.id}</span>
                 </div>
-                
                 <div class="danh-gia-phong">
                     <div class="sao">
-                        <i class="fas fa-star"></i>
-                        <span>${adults} người lớn</span>
+                        <i class="fas fa-users" style="color: #1976d2; margin-right: 7px; font-size: 15px;"></i>
+                        <span>${adults} người lớn, ${children} trẻ em</span>
                     </div>
                     <div class="luot-danh-gia">
-                        <i class="fas fa-bed"></i>
-                        <span>${children} trẻ em</span>
+                        <i class="fas fa-check-circle" style="color: #1976d2; margin-right: 6px;"></i>
+                        <span>Phù hợp yêu cầu</span>
                     </div>
                 </div>
-                
-                <p class="mo-ta-phong">${room.description || 'Tiện nghi đầy đủ, không gian thoáng mát.'}</p>
-                
+                <div style="background: #f0f9ff; border-left: 3px solid #1976d2; padding: 10px 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #1976d2;">
+                    <i class="fas fa-check-circle" style="color: #1976d2; margin-right: 6px;"></i> <strong>Phù hợp:</strong> Phòng này có đủ chỗ cho ${khachTim.nguoiLon} người lớn, ${khachTim.treEm} trẻ em
+                </div>
+                <p class="mo-ta-phong">${room.description || 'Phòng hiện đại, tiện nghi đầy đủ.'}</p>
                 <div class="tien-ich-phong">
                     ${amenitiesHTML}
                 </div>
             </div>
         </div>
     `;
+    
+    return html;
 }
 
 function formatPrice(price) {
