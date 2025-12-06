@@ -80,9 +80,40 @@
                     <span id="hienThiNgayTim">Ngày nhận phòng – Ngày trả phòng</span>
                 </div>
                 
-                <div class="truong-khach-phong">
+                <div class="truong-khach-phong" id="truongKhachTim">
                     <i class="fas fa-user"></i>
                     <span id="hienThiKhachTim">1 người lớn · 0 trẻ em · 1 phòng</span>
+                    
+                    <div class="hop-khach" id="hopKhachTim">
+                        <div class="hang-khach">
+                            <div class="nhan-khach">Người lớn</div>
+                            <div class="dieu-khien-khach">
+                                <button type="button" class="nut-khach minus" data-target="nguoiLon">−</button>
+                                <span class="so-khach" id="soNguoiLonTim">1</span>
+                                <button type="button" class="nut-khach plus" data-target="nguoiLon">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="hang-khach">
+                            <div class="nhan-khach">Trẻ em</div>
+                            <div class="dieu-khien-khach">
+                                <button type="button" class="nut-khach minus" data-target="treEm">−</button>
+                                <span class="so-khach" id="soTreEmTim">0</span>
+                                <button type="button" class="nut-khach plus" data-target="treEm">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="hang-khach">
+                            <div class="nhan-khach">Phòng</div>
+                            <div class="dieu-khien-khach">
+                                <button type="button" class="nut-khach minus" data-target="phong">−</button>
+                                <span class="so-khach" id="soPhongTim">1</span>
+                                <button type="button" class="nut-khach plus" data-target="phong">+</button>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="nut-xong-khach" id="nutXongKhachTim">Xong</button>
+                    </div>
                 </div>
                 
                 <button class="nut-tim-kiem-chinh" id="nutTimKiemChinh">
