@@ -374,8 +374,8 @@ function timKiemPhong() {
         return;
     }
 
-    var rooms = storageService.ensureRoomsSeeded();
-    var bookings = storageService.getBookings();
+    var rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+    var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
     
     if (rooms.length === 0) {
         alert('Chưa có phòng nào trong hệ thống!');
@@ -496,72 +496,78 @@ function hienThiKetQuaTimKiem(rooms) {
 }
 
 function taoThePhongTimKiem(room) {
+    // 1. Tính toán sức chứa
     var cap = parseCapacity(room);
     var adults = cap.adults.toString();
     var children = cap.children.toString();
     
+    // 2. Tính toán giá và tổng tiền
     var price = formatPrice(room.price);
     var soDem = nhanPhongTim && traPhongTim ? Math.ceil((traPhongTim - nhanPhongTim) / (1000 * 60 * 60 * 24)) : 1;
+    if (soDem <= 0) soDem = 1; // Fix lỗi ngày
     var tongTien = formatPrice(room.price * soDem);
     
-    // Xử lý danh sách tiện ích của phòng (amenities)
+    // 3. Xử lý tiện ích (Dùng đúng chuẩn class .tien-ich như trang chủ)
     var amenitiesArray = room.amenities ? room.amenities.split(',') : [];
-    for (var i = 0; i < amenitiesArray.length; i++) {
-        amenitiesArray[i] = amenitiesArray[i].trim();
-    }
-
-    // Hiển thị tiện ích với style màu xanh dương
     var amenitiesHTML = '';
-    for (var j = 0; j < amenitiesArray.length; j++) {
-        var amenity = amenitiesArray[j];
+    
+    // Chỉ lấy tối đa 4 tiện ích để thẻ không bị dài quá
+    for (var j = 0; j < Math.min(amenitiesArray.length, 4); j++) {
+        var amenity = amenitiesArray[j].trim();
         var icon = 'fas fa-check';
-        if (amenity.toLowerCase().indexOf('wifi') !== -1) icon = 'fas fa-wifi';
-        else if (amenity.toLowerCase().indexOf('tv') !== -1) icon = 'fas fa-tv';
-        else if (amenity.toLowerCase().indexOf('điều hòa') !== -1) icon = 'fas fa-snowflake';
-        else if (amenity.toLowerCase().indexOf('minibar') !== -1 || amenity.toLowerCase().indexOf('mini bar') !== -1) icon = 'fas fa-glass-martini';
-        amenitiesHTML += '<span style="color: #1976d2; font-size: 14px; padding: 8px 14px; background: #ebf3ff; border-radius: 7px; display: inline-flex; align-items: center; gap: 7px; line-height: 1.5; border: 1px solid #b3d9ff;"><i class="' + icon + '" style="font-size: 14px;"></i> ' + amenity + '</span>';
+        
+        // Map icon giống trang chủ
+        if (amenity.toLowerCase().includes('wifi')) icon = 'fas fa-wifi';
+        else if (amenity.toLowerCase().includes('tv')) icon = 'fas fa-tv';
+        else if (amenity.toLowerCase().includes('điều hòa')) icon = 'fas fa-snowflake';
+        else if (amenity.toLowerCase().includes('minibar')) icon = 'fas fa-glass-martini';
+        else if (amenity.toLowerCase().includes('bàn')) icon = 'fas fa-laptop';
+        else if (amenity.toLowerCase().includes('tắm')) icon = 'fas fa-bath';
+
+        // QUAN TRỌNG: Dùng class "tien-ich" chuẩn của index.css
+        amenitiesHTML += `<span class="tien-ich"><i class="${icon}"></i> ${amenity}</span>`;
     }
     
-    var html = `
+    // 4. Trả về HTML giống hệt cấu trúc index.js
+    // Lưu ý: Đã bỏ các style màu xanh dương và khung "Phù hợp"
+    return `
         <div class="the-phong" onclick="datPhongNgay(${room.id})" style="cursor: pointer;">
             <div class="anh-phong">
-                <img src="${room.image || '../img/khachsan1(1).jpg'}" alt="${room.name}" onerror="this.src='../img/khachsan1(1).jpg'">
+                <img src="${room.image}" alt="${room.name}" onerror="this.src='../img/khachsan1(1).jpg'">
                 <div class="nhan-phong">Tầng ${room.floor || '1'}</div>
             </div>
             <div class="noi-dung-phong">
                 <div class="tieu-de-phong">
                     <h3 class="ten-phong">${room.name}</h3>
+                    
                     <div class="gia-phong">${price}</div>
-                    <div style="color: #666; font-size: 14px; margin-top: 4px;">
-                        <i class="fas fa-calculator" style="margin-right: 5px; color: #1976d2;"></i> ${soDem} đêm = <strong style="color: #1976d2;">${tongTien}</strong>
-                    </div>
+                    ${soDem > 1 ? `<div style="font-size: 13px; color: #d32f2f; font-weight: 500;">(Tổng ${soDem} đêm: ${tongTien})</div>` : ''}
                 </div>
+                
                 <div class="loai-phong">
                     <span class="dia-diem-phong">${room.hotel || 'QuickStay Hotel'}</span>
-                    <span class="hang-phong">Phòng ${room.roomNumber || room.id}</span>
+                    <span class="hang-phong">${room.type || 'Standard'}</span>
                 </div>
+                
                 <div class="danh-gia-phong">
                     <div class="sao">
-                        <i class="fas fa-users" style="color: #1976d2; margin-right: 7px; font-size: 15px;"></i>
-                        <span>${adults} người lớn, ${children} trẻ em</span>
+                        <i class="fas fa-star"></i>
+                        <span>${adults} người lớn</span>
                     </div>
                     <div class="luot-danh-gia">
-                        <i class="fas fa-check-circle" style="color: #1976d2; margin-right: 6px;"></i>
-                        <span>Phù hợp yêu cầu</span>
+                        <i class="fas fa-bed"></i>
+                        <span>${children} trẻ em</span>
                     </div>
                 </div>
-                <div style="background: #f0f9ff; border-left: 3px solid #1976d2; padding: 10px 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #1976d2;">
-                    <i class="fas fa-check-circle" style="color: #1976d2; margin-right: 6px;"></i> <strong>Phù hợp:</strong> Phòng này có đủ chỗ cho ${khachTim.nguoiLon} người lớn, ${khachTim.treEm} trẻ em
-                </div>
-                <p class="mo-ta-phong">${room.description || 'Phòng hiện đại, tiện nghi đầy đủ.'}</p>
+                
+                <p class="mo-ta-phong">${room.description || 'Tiện nghi đầy đủ, không gian thoáng mát.'}</p>
+                
                 <div class="tien-ich-phong">
                     ${amenitiesHTML}
                 </div>
             </div>
         </div>
     `;
-    
-    return html;
 }
 
 function formatPrice(price) {
