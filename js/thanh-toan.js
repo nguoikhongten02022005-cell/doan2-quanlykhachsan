@@ -134,21 +134,57 @@ function khoiTaoPhuongThucThanhToan() {
     var phuongThucInputs = document.querySelectorAll('input[name="phuongThuc"]');
     var formNganHang = document.getElementById('formNganHang');
     var formTienMat = document.getElementById('formTienMat');
-    
+
+    // Hàm cập nhật hiển thị theo radio đang check
+    function capNhatHienThi() {
+        // Ẩn tất cả các form trước
+        if (formNganHang) {
+            formNganHang.style.display = 'none';
+        }
+        if (formTienMat) {
+            formTienMat.style.display = 'none';
+        }
+
+        // Kiểm tra radio button nào đang được chọn
+        var checked = document.querySelector('input[name="phuongThuc"]:checked');
+        if (!checked) return;
+
+        // Hiển thị form tương ứng với phương thức được chọn
+        if (checked.value === 'ngan-hang' && formNganHang) {
+            formNganHang.style.display = 'block';
+        } else if (checked.value === 'tien-mat' && formTienMat) {
+            formTienMat.style.display = 'block';
+        }
+        
+        // Log để debug (có thể xóa sau khi kiểm tra)
+        console.log('Phương thức thanh toán đã chọn:', checked.value);
+    }
+
+    // Gắn sự kiện change cho tất cả radio button
     phuongThucInputs.forEach(function(input) {
         input.addEventListener('change', function() {
-            // Ẩn tất cả các form
-            if (formNganHang) formNganHang.style.display = 'none';
-            if (formTienMat) formTienMat.style.display = 'none';
-            
-            // Hiển thị form tương ứng
-            if (this.value === 'ngan-hang' && formNganHang) {
-                formNganHang.style.display = 'block';
-            } else if (this.value === 'tien-mat' && formTienMat) {
-                formTienMat.style.display = 'block';
-            }
+            capNhatHienThi();
+        });
+        
+        // Thêm sự kiện click để đảm bảo hoạt động
+        input.addEventListener('click', function() {
+            capNhatHienThi();
         });
     });
+
+    // Gắn sự kiện click cho các label để đảm bảo chuyển đổi
+    var labels = document.querySelectorAll('.phuong-thuc label');
+    labels.forEach(function(label) {
+        label.addEventListener('click', function(e) {
+            // Đợi một chút để radio button được check trước
+            setTimeout(function() {
+                capNhatHienThi();
+            }, 10);
+        });
+    });
+
+    // Khởi tạo trạng thái ban đầu (hiển thị form tương ứng với radio đã checked)
+    capNhatHienThi();
 }
 
 function khoiTaoFormValidation() {

@@ -140,32 +140,27 @@
                             </div>
                         </div>
 
-                        <div class="form-the" id="formNganHang">
+                        <!-- Form cho Chuyển khoản ngân hàng - hiển thị QR code -->
+                        <div class="form-the" id="formNganHang" style="display: block;">
                             <div class="thong-tin-chuyen-khoan">
                                 <h3 style="margin-bottom: 15px; color: #333; font-size: 16px; text-align: center;">
                                     <i class="fas fa-info-circle"></i> Quét mã QR để thanh toán
                                 </h3>
                                 <div style="text-align: center; padding: 20px;">
-                                    <img src="../img/qrcode.jpg" alt="QR Code Thanh Toán" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                    <img src="../img/qrcodethanhtoan.jpg" alt="QR Code Thanh Toán" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                                 </div>
-                                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-top: 15px;">
-                                    <p style="margin: 0; color: #856404; font-size: 14px;">
-                                        <i class="fas fa-exclamation-triangle"></i> 
-                                        <strong>Lưu ý:</strong> Vui lòng ghi rõ <span style="color: #dc3545; font-weight: 600;">Mã đặt phòng + Họ tên</span> khi chuyển khoản
-                                    </p>
-                                </div>
+                                
                             </div>
                         </div>
-                        
                         <div class="form-the" id="formTienMat" style="display: none;">
                             <div class="thong-tin-chuyen-khoan">
                                 <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #4caf50;">
-                                    <p style="margin: 0; color: #2e7d32;">
+                                    <p style="margin: 0; color: #2e7d32; font-size: 15px; font-weight: 500;">
                                         <i class="fas fa-check-circle"></i> 
                                         Bạn sẽ thanh toán trực tiếp tại quầy lễ tân khi nhận phòng.
                                     </p>
                                     <p style="margin: 12px 0 0 0; color: #555; font-size: 14px;">
-                                        Chúng tôi chấp nhận: Tiền mặt, thẻ ATM, thẻ tín dụng
+                                        <i class="fas fa-credit-card"></i> Chúng tôi chấp nhận: Tiền mặt, thẻ ATM, thẻ tín dụng
                                     </p>
                                 </div>
                             </div>
@@ -316,7 +311,33 @@
 
     <script src="../js/storageService.js?v=2025"></script>
     <script src="../js/common.js?v=2025"></script>
-    <script src="../js/thanh-toan.js?v=2025" defer></script>
+    <script src="../js/thanh-toan.js?v=20251216"></script>
+    
+    <!-- Debug script để test chuyển đổi form -->
+    <script>
+        console.log('=== DEBUG: Script được load ===');
+        
+        // Chờ DOM load xong
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('=== DEBUG: DOM loaded ===');
+            
+            // Test các elements có tồn tại không
+            var formNganHang = document.getElementById('formNganHang');
+            var formTienMat = document.getElementById('formTienMat');
+            console.log('formNganHang exists:', !!formNganHang);
+            console.log('formTienMat exists:', !!formTienMat);
+            
+            if (formNganHang) console.log('formNganHang display:', formNganHang.style.display);
+            if (formTienMat) console.log('formTienMat display:', formTienMat.style.display);
+            
+            // Test radio buttons
+            var radios = document.querySelectorAll('input[name="phuongThuc"]');
+            console.log('Số radio buttons:', radios.length);
+            radios.forEach(function(radio) {
+                console.log('Radio:', radio.value, 'checked:', radio.checked);
+            });
+        });
+    </script>
     
     <!-- Chatbot Widget -->
     <div class="chatbot-container">
