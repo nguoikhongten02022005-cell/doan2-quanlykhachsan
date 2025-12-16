@@ -626,9 +626,11 @@ function hienThiThongBaoMa(message, type) {
         closePromosModal();
     }
 
-    // modal open/close
-    var modal = document.getElementById('promoModal');
+    // modal open/close (query DOM lazily to avoid null when script loads early)
+    var modal = null;
+    function getModal() { return document.getElementById('promoModal'); }
     function openPromosModal() {
+        modal = getModal();
         if (!modal) return;
         modal.style.display = 'block';
         setTimeout(function(){ modal.classList.add('show'); }, 10);
@@ -638,6 +640,7 @@ function hienThiThongBaoMa(message, type) {
         if (first) first.focus();
     }
     function closePromosModal() {
+        modal = modal || getModal();
         if (!modal) return;
         modal.classList.remove('show');
         setTimeout(function(){ modal.style.display = 'none'; }, 220);
@@ -652,8 +655,8 @@ function hienThiThongBaoMa(message, type) {
         var closef = document.getElementById('promoCloseFooter');
         if (closef) closef.addEventListener('click', closePromosModal);
         // click backdrop to close
-        var backdrop = modal && modal.querySelector('.promo-modal-backdrop');
-        if (backdrop) backdrop.addEventListener('click', closePromosModal);
+        var backdropEl = getModal() ? getModal().querySelector('.promo-modal-backdrop') : null;
+        if (backdropEl) backdropEl.addEventListener('click', closePromosModal);
         // ESC to close
         document.addEventListener('keydown', function(e){
             if (e.key === 'Escape' && modal && modal.style.display === 'block') closePromosModal();
