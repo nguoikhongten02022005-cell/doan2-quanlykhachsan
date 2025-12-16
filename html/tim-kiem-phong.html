@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm Kiếm Phòng - QuickStay Hotel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/index.css?v=2025">
+    <link rel="stylesheet" href="../css/tim-kiem-phong.css">
+</head>
+<body>
+    <header class="dau-trang">
+        <nav class="thanh-dieu-huong">
+            <div class="hop-dieu-huong">
+                <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                
+                <ul class="menu-dieu-huong">
+                    <li><a href="index.html">Trang chủ</a></li>
+                    <li><a href="thongtindatphong.html">Thông tin đặt phòng</a></li>
+                    <li><a href="gioithieu.html">Giới thiệu</a></li>
+                    <li><a href="tiennghi.html">Tiện nghi</a></li>
+                </ul>
+                
+                <div class="hanh-dong-dieu-huong">
+                    <button class="nut-dang-nhap" id="nutDangNhap" onclick="window.location.href='login.html'">Đăng Nhập</button>
+                    
+                    <div class="user-dropdown" id="userDropdown" style="display: none;">
+                        <button class="user-dropdown-btn" onclick="toggleUserMenu(event)">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userName">User</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <a href="thongtincanhan.html" class="user-dropdown-item">
+                                <i class="fas fa-user"></i> Thông tin cá nhân
+                            </a>
+                            <a href="#" onclick="return dangXuat(event);" class="user-dropdown-item logout">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <button class="nut-menu-banh" id="nutMenu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="nen-menu-di-dong" id="nenDiDong"></div>
+        <div class="menu-di-dong" id="menuDiDong">
+            <div class="tieu-de-menu-di-dong">
+                <div class="logo">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                <button class="nut-dong-menu" id="dongMenu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="lien-ket-menu-di-dong">
+                <a href="index.html">Trang chủ</a>
+                <a href="thongtindatphong.html">Thông tin đặt phòng</a>
+                <a href="gioithieu.html">Giới thiệu</a>
+                <a href="tiennghi.html">Tiện nghi</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="thanh-tim-kiem-chinh">
+        <div class="hop-chua-thanh-tim-kiem">
+            <div class="form-tim-kiem-chinh">
+                <div class="truong-ngay-thang">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="hienThiNgayTim">Ngày nhận phòng – Ngày trả phòng</span>
+                </div>
+                
+                <div class="truong-khach-phong" id="truongKhachTim">
+                    <i class="fas fa-user"></i>
+                    <span id="hienThiKhachTim">1 người lớn · 0 trẻ em · 1 phòng</span>
+                    
+                    <div class="hop-khach" id="hopKhachTim">
+                        <div class="hang-khach">
+                            <div class="nhan-khach">Người lớn</div>
+                            <div class="dieu-khien-khach">
+                                <button type="button" class="nut-khach minus" data-target="nguoiLon">−</button>
+                                <span class="so-khach" id="soNguoiLonTim">1</span>
+                                <button type="button" class="nut-khach plus" data-target="nguoiLon">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="hang-khach">
+                            <div class="nhan-khach">Trẻ em</div>
+                            <div class="dieu-khien-khach">
+                                <button type="button" class="nut-khach minus" data-target="treEm">−</button>
+                                <span class="so-khach" id="soTreEmTim">0</span>
+                                <button type="button" class="nut-khach plus" data-target="treEm">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="hang-khach">
+                            <div class="nhan-khach">Phòng</div>
+                            <div class="dieu-khien-khach">
+                                <button type="button" class="nut-khach minus" data-target="phong">−</button>
+                                <span class="so-khach" id="soPhongTim">1</span>
+                                <button type="button" class="nut-khach plus" data-target="phong">+</button>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="nut-xong-khach" id="nutXongKhachTim">Xong</button>
+                    </div>
+                </div>
+                
+                <button class="nut-tim-kiem-chinh" id="nutTimKiemChinh">
+                    Tìm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="noi-dung-chinh">
+        <div class="hop-chua-tim-kiem">
+            <div class="noi-dung-ket-qua" id="noiDungKetQua" style="display: none;">
+                <div class="header-ket-qua" id="searchResultsHeader">
+                    <h1><span id="soLuongKetQua">0</span> khách sạn được tìm thấy</h1>
+                    <div class="thanh-dieu-khien">
+                        <div class="sap-xep">
+                            <span>Sắp xếp theo:</span>
+                            <select id="selectSapXep">
+                                <option value="top-picks">Lựa chọn hàng đầu cho lưu trú dài hạn</option>
+                                <option value="price-low">Giá từ thấp đến cao</option>
+                                <option value="price-high">Giá từ cao đến thấp</option>
+                                <option value="rating">Đánh giá</option>
+                            </select>
+                        </div>
+                        <div class="chuyen-doi-xem">
+                            <button class="nut-xem active" data-view="list">Danh sách</button>
+                            <button class="nut-xem" data-view="grid">Lưới</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="danh-sach-ket-qua" id="searchResultsContainer">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="chan-trang">
+        <div class="hop-chan-trang">
+            <div class="khu-chan-trang">
+                <div class="logo-chan-trang">
+                    <i class="fas fa-bed"></i>
+                    <span>QuickStay</span>
+                </div>
+                <p class="mo-ta-chan-trang">
+                    Dịch vụ đặt phòng khách sạn hàng đầu gần bạn. 
+                    Từ khách sạn sang trọng đến villa và 
+                    cung cấp dịch vụ tốt nhất.
+                </p>
+                <div class="lien-ket-mxh">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div class="khu-chan-trang">
+                <h3>CÔNG TY</h3>
+                <ul>
+                    <li><a href="#">Giới Thiệu</a></li>
+                    <li><a href="#">Nghề Nghiệp</a></li>
+                    <li><a href="#">Tin Tức</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Đối Tác</a></li>
+                </ul>
+            </div>
+
+            <div class="khu-chan-trang">
+                <h3>HỖ TRỢ</h3>
+                <ul>
+                    <li><a href="#">Trung Tâm Trợ Giúp</a></li>
+                    <li><a href="#">Thông Tin An Toàn</a></li>
+                    <li><a href="#">Tùy Chọn Hủy</a></li>
+                    <li><a href="#">Liên Hệ</a></li>
+                    <li><a href="#">Khả Năng Tiếp Cận</a></li>
+                </ul>
+            </div>
+
+            <div class="khu-chan-trang newsletter-section">
+                <h3>CẬP NHẬT MỚI</h3>
+                <p>Đăng ký nhận bản tin để nhận thông tin khuyến mãi và ưu đãi đặc biệt.</p>
+                <div class="bieu-mau-ban-tin">
+                    <input type="email" placeholder="Email của bạn">
+                    <button type="submit">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chan-trang-duoi">
+            <div class="hop-chan-trang">
+                <p>&copy; 2025 QuickStay. Tất cả quyền được bảo lưu.</p>
+                <div class="lien-ket-chan-trang">
+                    <a href="#">Quyền Riêng Tư</a>
+                    <a href="#">Điều Khoản</a>
+                    <a href="#">Sơ Đồ Trang</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/storageService.js?v=2025"></script>
+    <script src="../js/common.js?v=2025"></script>
+    <script src="../js/tim-kiem-phong.js"></script>
+    
+    <!-- Chatbot Widget -->
+    <div class="chatbot-container">
+        <button class="chatbot-button" id="chatbotButton">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3><i class="fas fa-robot"></i> Trợ lý AI QuickStay</h3>
+                <button class="chatbot-close" id="chatbotClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input-area">
+                <input 
+                    type="text" 
+                    class="chatbot-input" 
+                    id="chatbotInput" 
+                    placeholder="Nhập câu hỏi của bạn..."
+                >
+                <button class="chatbot-send" id="chatbotSend">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>
