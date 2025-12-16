@@ -480,3 +480,42 @@
     .promo-left { flex-direction:column; align-items:flex-start; }
     .promo-actions { flex-direction:column; width:100%; align-items:flex-end; }
 }
+
+/* Fix: promo input action alignment and eye-button */
+.khu-ma-giam-gia > div > div {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-xem-ma {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #2563eb;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-xem-ma i {
+    line-height: 1;
+}
+
+.btn-xem-ma:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+/* make apply button and eye button visually aligned */
+.khu-ma-giam-gia button[id="nutApDungMa"] {
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
