@@ -440,6 +440,10 @@
 .promo-desc { color:#475569; font-size:13px; margin-top:4px; }
 .promo-meta { color:#6b7280; font-size:12px; margin-top:6px; }
 
+/* Hide the descriptive line under promo code (keep only time/meta) */
+.promo-desc { display: none !important; }
+.promo-meta { margin-top: 6px; }
+
 /* right actions */
 .promo-actions {
     display:flex;
