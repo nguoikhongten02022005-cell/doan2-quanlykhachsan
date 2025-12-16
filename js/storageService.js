@@ -20,6 +20,22 @@ var storageService = (function() {
         }
     }
 
+    function toNumber(v) {
+        if (v === undefined || v === null) return 0;
+        if (typeof v === 'number') return v;
+        var s = String(v).replace(/[^\d.\-]/g, '');
+        var n = Number(s);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function normalizeDateStr(s) {
+        if (!s) return null;
+        if (typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+        var d = new Date(s);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString().split('T')[0];
+    }
+
     // Dữ liệu phòng mẫu dùng làm fallback khi chưa có dữ liệu thật
     var sampleRooms = [
         {
@@ -272,6 +288,19 @@ var storageService = (function() {
 
     function saveBooking(booking) {
         var bookings = getBookings();
+        booking = Object.assign({}, booking);
+        booking.id = booking.id || ('BK' + Date.now());
+        booking.price = toNumber(booking.price);
+        booking.totalAmount = toNumber(booking.totalAmount) || booking.price * (booking.nights || 1);
+
+        booking.checkIn = normalizeDateStr(booking.checkIn || booking.checkin);
+        booking.checkOut = normalizeDateStr(booking.checkOut || booking.checkout);
+
+        booking.status = booking.status || 'pending';
+        booking.createdAt = booking.createdAt || new Date().toISOString();
+
+        booking.guests = booking.guests || { nguoiLon: booking.adults || 2, treEm: booking.children || 0, phong: booking.rooms || 1 };
+
         bookings.push(booking);
         saveBookings(bookings);
         return booking;

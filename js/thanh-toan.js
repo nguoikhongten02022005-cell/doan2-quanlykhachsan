@@ -30,6 +30,13 @@ function diemThongTinUser() {
     }
 }
 
+function getNumericPrice(b) {
+    var p = (b && (b.price || b.totalAmount || b.total)) || 0;
+    if (typeof p === 'string') p = p.replace(/[^\d.-]/g, '');
+    var n = Number(p);
+    return isNaN(n) ? 0 : n;
+}
+
 // khoiTaoMenuDiDong đã được chuyển sang common.js
 
 function taiDuLieuGioHang() {
@@ -71,7 +78,7 @@ function taiDuLieuGioHang() {
         var soDem = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
         if (soDem <= 0) soDem = 1;
         
-        var price = parseInt(booking.price) || 1000000;
+        var price = getNumericPrice(booking) || 1000000;
         var thanhTien = price * soDem;
         tongTien += thanhTien;
         

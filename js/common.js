@@ -84,13 +84,26 @@ function ensureAuthenticated(options = {}) {
     return null;
 }
 
+function getCurrentUserData() {
+    try {
+        return JSON.parse(localStorage.getItem('currentUser') || 'null');
+    } catch (e) {
+        return null;
+    }
+}
+
 // Lắng nghe khi localStorage thay đổi (ví dụ: đăng nhập ở tab popup hoặc tab khác)
 window.addEventListener('storage', function (e) {
-    if (e.key === 'currentUser' || e.key === 'authToken') {
+    if (e.key === 'currentUser' || e.key === 'authToken' || e.key === 'bookings') {
         try {
-            checkLoginStatus();
+            if (typeof checkLoginStatus === 'function') checkLoginStatus();
         } catch (err) {
             console.warn('Lỗi khi cập nhật trạng thái đăng nhập sau storage event:', err);
+        }
+        try {
+            if (typeof capNhatTomTatDonHang === 'function') capNhatTomTatDonHang();
+        } catch (err) {
+            // ignore
         }
     }
 });
@@ -271,6 +284,24 @@ function setupPasswordToggle(container = document) {
             }
         });
     }
+}
+
+// Global error handlers for easier debugging
+window.addEventListener('error', function(e) {
+    try { console.error('Global error:', e.error || e.message || e); } catch(_){}
+});
+window.addEventListener('unhandledrejection', function(e) {
+    try { console.error('Unhandled rejection:', e.reason || e); } catch(_){}
+});
+
+// Helper for dev: dump bookings
+function dumpBookings() {
+    try {
+        console.log('localStorage.bookings:', localStorage.getItem('bookings'));
+        if (window.storageService && typeof window.storageService.getBookings === 'function') {
+            console.log('storageService.getBookings():', storageService.getBookings());
+        }
+    } catch (e) { console.warn(e); }
 }
 
 /* ==============================================
