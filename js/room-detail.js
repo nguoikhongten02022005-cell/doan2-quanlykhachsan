@@ -86,11 +86,34 @@ function loadRoomDetail() {
 }
 
 function datPhongNgay() {
-    var userInfo = ensureAuthenticated({
-        message: 'Bạn cần đăng nhập để đặt phòng. Chuyển đến trang đăng nhập?',
-        returnUrl: window.location.href
-    });
-    if (!userInfo) return;
+    var userInfo = null;
+    
+    // Kiểm tra xem hàm ensureAuthenticated có tồn tại không
+    if (typeof ensureAuthenticated === 'function') {
+        userInfo = ensureAuthenticated({
+            message: 'Bạn cần đăng nhập để đặt phòng. Chuyển đến trang đăng nhập?',
+            returnUrl: window.location.href
+        });
+        if (!userInfo) return;
+    } else {
+        // Fallback nếu hàm ensureAuthenticated không tồn tại
+        var currentUserStr = localStorage.getItem('currentUser');
+        if (!currentUserStr) {
+            var message = 'Bạn cần đăng nhập để đặt phòng. Chuyển đến trang đăng nhập?';
+            if (confirm(message)) {
+                var returnUrl = window.location.href;
+                window.location.href = 'login.html?returnUrl=' + encodeURIComponent(returnUrl);
+            }
+            return;
+        }
+        try {
+            userInfo = JSON.parse(currentUserStr);
+        } catch (e) {
+            alert('Lỗi đọc thông tin đăng nhập. Vui lòng đăng nhập lại.');
+            window.location.href = 'login.html';
+            return;
+        }
+    }
     
     if (!currentRoom) {
         alert('Không tìm thấy thông tin phòng!');
