@@ -537,81 +537,129 @@ function hienThiThongBaoMa(message, type) {
     thongBao.style.borderRadius = '6px';
 }
 
-// Promo modal helpers
-function openPromoModal() {
-    var modal = document.getElementById('promoModal');
-    if (!modal) return;
-    modal.style.display = 'block';
-    loadPromotionsToModal();
-}
-
-function closePromoModal() {
-    var modal = document.getElementById('promoModal');
-    if (!modal) return;
-    modal.style.display = 'none';
-}
-
-function loadPromotionsToModal() {
-    var promoListEl = document.getElementById('promoList');
-    if (!promoListEl) return;
-    promoListEl.innerHTML = '';
-    var raw = localStorage.getItem('promotions');
-    var promotions = [];
-    try { promotions = raw ? JSON.parse(raw) : []; } catch (e) { promotions = []; }
-
-    if (!promotions || promotions.length === 0) {
-        promoListEl.innerHTML = '<div style="padding:16px;color:#64748b">Không có mã giảm giá nào.</div>';
-        return;
+// ---- Promo UI: render + interactions ----
+(function(){
+    function formatDateShort(d) {
+        if (!d) return '—';
+        var dt = new Date(d);
+        if (isNaN(dt.getTime())) return d;
+        return dt.toISOString().split('T')[0];
     }
 
-    promotions.forEach(function(p) {
-        var card = document.createElement('div');
-        card.className = 'promo-card';
-        var code = (p.code || p.ma || p.id || '').toUpperCase();
-        var desc = p.description || p.moTa || p.ghiChu || '';
-        var type = p.discountType || p.loaiGiam || (p.discountValue && typeof p.discountValue === 'string' && p.discountValue.indexOf('%')>-1 ? 'percent' : 'amount');
-        var valueText = (type === 'percent') ? (p.discountValue + '%') : (formatPrice(getNumericSafe(p.discountValue || p.giaTriGiam || 0)));
+    function getPromotions() {
+        try { return JSON.parse(localStorage.getItem('promotions')||'[]'); } catch(e){ return []; }
+    }
 
-        card.innerHTML = '' +
-            '<div class="promo-card-left">' +
-                '<div class="promo-code">' + code + '</div>' +
-                '<div class="promo-desc">' + (desc || '&nbsp;') + '</div>' +
-            '</div>' +
-            '<div class="promo-card-right">' +
-                '<div class="promo-value">' + valueText + '</div>' +
-                '<button class="promo-apply-btn" data-code="' + code + '">Áp dụng</button>' +
-            '</div>';
+    function isPromoActive(p) {
+        var now = new Date();
+        if (p.startDate && new Date(p.startDate) > now) return false;
+        if (p.endDate && new Date(p.endDate) < now) return false;
+        var max = Number(p.maxUses || p.soluong || 0);
+        var used = Number(p.usedCount || 0);
+        if (max > 0 && used >= max) return false;
+        return true;
+    }
 
-        promoListEl.appendChild(card);
-    });
+    function renderPromos() {
+        var promos = getPromotions();
+        var container = document.getElementById('promoList');
+        if (!container) return;
+        if (!promos || promos.length === 0) {
+            container.innerHTML = '<div style="padding:20px;color:#475569">Không có mã giảm giá.</div>';
+            return;
+        }
+        var html = '';
+        promos.forEach(function(p){
+            var active = isPromoActive(p);
+            var desc = p.description || (p.discountType === 'percent' ? (p.discountValue + '%') : (p.discountValue + ' đ'));
+            html += '<div class="promo-item">';
+            html += '<div class="promo-left">';
+            html += '<div><div class="promo-code">' + (p.code || p.id || '') + '</div>';
+            html += '<div class="promo-desc">' + desc + '</div>';
+            html += '<div class="promo-meta">Thời gian: ' + (p.startDate?formatDateShort(p.startDate):'—') + ' → ' + (p.endDate?formatDateShort(p.endDate):'—') + '</div></div>';
+            html += '</div>';
+            html += '<div class="promo-actions">';
+            html += '<div class="promo-percent">' + (p.discountType === 'percent' ? (p.discountValue + '%') : '') + '</div>';
+            html += '<button class="btn-copy" data-code="' + (p.code||p.id||'') + '" title="Sao chép mã"><i class="fas fa-copy"></i> Copy</button>';
+            html += '<button class="btn-apply" data-code="' + (p.code||p.id||'') + '"' + (active? '':' disabled') + '>' + (active? 'Áp dụng':'Hết hạn') + '</button>';
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
 
-    // bind apply buttons
-    Array.prototype.slice.call(promoListEl.querySelectorAll('.promo-apply-btn')).forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var code = btn.getAttribute('data-code') || '';
-            var input = document.getElementById('inputMaGiamGia');
-            if (input) {
-                input.value = code;
-            }
-            // close modal then apply
-            closePromoModal();
-            setTimeout(function() { apDungMaGiamGia(); }, 150);
+        // bind copy
+        container.querySelectorAll('.btn-copy').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                var code = this.getAttribute('data-code') || '';
+                if (!code) return alert('Mã rỗng');
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(code).then(function(){ alert('Đã copy: ' + code); });
+                } else {
+                    var ta = document.createElement('textarea'); ta.value = code; document.body.appendChild(ta); ta.select();
+                    document.execCommand('copy'); document.body.removeChild(ta);
+                    alert('Đã copy: ' + code);
+                }
+            });
+        });
+
+        // bind apply
+        container.querySelectorAll('.btn-apply').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                if (this.disabled) return;
+                var code = this.getAttribute('data-code') || '';
+                applyPromoFromModal(code);
+            });
+        });
+    }
+
+    // apply code into form + trigger existing apply button
+    function applyPromoFromModal(code) {
+        var maInput = document.querySelector('#inputMaGiamGia, input[placeholder*="MÃ GIẢM"], input[name*="ma"]');
+        if (!maInput) {
+            alert('Không tìm thấy ô nhập mã trên trang.');
+            return;
+        }
+        maInput.value = code;
+        // try to click existing apply button
+        var applyBtn = document.querySelector('#nutApDungMa, button.btn-ap-dung, button[data-action="apply-promo"]') || Array.from(document.querySelectorAll('button')).find(function(b){ return /áp dụng/i.test(b.textContent); });
+        if (applyBtn) { applyBtn.click(); }
+        else { alert('Đã điền mã: ' + code); }
+        closePromosModal();
+    }
+
+    // modal open/close
+    var modal = document.getElementById('promoModal');
+    function openPromosModal() {
+        if (!modal) return;
+        modal.style.display = 'block';
+        setTimeout(function(){ modal.classList.add('show'); }, 10);
+        renderPromos();
+        // focus first button for accessibility
+        var first = modal.querySelector('.btn-apply:not([disabled])') || modal.querySelector('.btn-copy');
+        if (first) first.focus();
+    }
+    function closePromosModal() {
+        if (!modal) return;
+        modal.classList.remove('show');
+        setTimeout(function(){ modal.style.display = 'none'; }, 220);
+    }
+
+    // events
+    document.addEventListener('DOMContentLoaded', function(){
+        var xemBtn = document.getElementById('xemMaGiamGiaBtn');
+        if (xemBtn) xemBtn.addEventListener('click', openPromosModal);
+        var close = document.getElementById('promoClose');
+        if (close) close.addEventListener('click', closePromosModal);
+        var closef = document.getElementById('promoCloseFooter');
+        if (closef) closef.addEventListener('click', closePromosModal);
+        // click backdrop to close
+        var backdrop = modal && modal.querySelector('.promo-modal-backdrop');
+        if (backdrop) backdrop.addEventListener('click', closePromosModal);
+        // ESC to close
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape' && modal && modal.style.display === 'block') closePromosModal();
         });
     });
-}
 
-function getNumericSafe(v) {
-    if (v == null) return 0;
-    var n = parseFloat(('' + v).replace(/[^0-9.-]+/g, ''));
-    return isNaN(n) ? 0 : n;
-}
-
-// wire modal open/close after DOM ready
-document.addEventListener('DOMContentLoaded', function() {
-    var xemBtn = document.getElementById('xemMaGiamGiaBtn');
-    if (xemBtn) xemBtn.addEventListener('click', openPromoModal);
-    var closeBtn = document.getElementById('promoClose');
-    if (closeBtn) closeBtn.addEventListener('click', closePromoModal);
-    var overlay = document.getElementById('promoOverlay');
-    if (overlay) overlay.addEventListener('click', closePromoModal);
-});
+    // expose apply helper for other scripts
+    window.applyPromoFromModal = applyPromoFromModal;
+})();

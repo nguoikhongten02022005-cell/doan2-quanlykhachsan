@@ -176,8 +176,7 @@
                                             style="padding: 12px 20px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.3s;">
                                         <i class="fas fa-check"></i> Áp dụng
                                     </button>
-                                    <button id="xemMaGiamGiaBtn" type="button" 
-                                            style="padding: 12px 14px; background: #fff; color: #2563eb; border: 1px solid #e2e8f0; border-radius: 6px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                                    <button type="button" id="xemMaGiamGiaBtn" class="btn-xem-ma" aria-haspopup="dialog" aria-controls="promoModal">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 </div>
@@ -327,21 +326,24 @@
         });
     </script>
     
-    <!-- Promo codes modal (inserted by assistant) -->
-    <div id="promoModal" class="promo-modal" style="display:none;">
-        <div class="promo-modal-overlay" id="promoOverlay"></div>
-        <div class="promo-modal-content" role="dialog" aria-modal="true" aria-labelledby="promoModalTitle">
-            <div class="promo-modal-header">
-                <h3 id="promoModalTitle">Mã giảm giá khả dụng</h3>
-                <button id="promoClose" class="promo-close" aria-label="Đóng">×</button>
-            </div>
-            <div class="promo-modal-body">
-                <div id="promoList" class="promo-list">
-                    <!-- Danh sách mã sẽ được load bằng JS -->
-                </div>
-            </div>
+<!-- PROMO MODAL (dùng role dialog + aria) -->
+<div id="promoModal" class="promo-modal" role="dialog" aria-modal="true" aria-labelledby="promoModalTitle" style="display:none;">
+    <div class="promo-modal-backdrop" tabindex="-1"></div>
+    <div class="promo-modal-panel" role="document" aria-labelledby="promoModalTitle">
+        <header class="promo-modal-header">
+            <h2 id="promoModalTitle">Mã giảm giá khả dụng</h2>
+            <button id="promoClose" class="promo-close" aria-label="Đóng cửa sổ">&times;</button>
+        </header>
+
+        <div class="promo-modal-body" id="promoList" aria-live="polite">
+            <!-- Danh sách mã sẽ được render vào đây -->
         </div>
+
+        <footer class="promo-modal-footer">
+            <button id="promoCloseFooter" class="btn btn-secondary">Đóng</button>
+        </footer>
     </div>
+</div>
 
     <!-- Chatbot Widget -->
     <div class="chatbot-container">
