@@ -337,21 +337,58 @@ function capNhatSoLuongMaGiamGia(code) {
     localStorage.setItem('promotions', JSON.stringify(promotions));
 }
 
-function hienThiThongBaoThanhCong(loaiThanhToan) {
-    var message = '';
-    if (loaiThanhToan === 'tien-mat') {
-        message = 'Đặt phòng thành công!\n\nBạn sẽ thanh toán trực tiếp tại quầy lễ tân khách sạn khi nhận phòng.\n\nChúng tôi đã gửi email xác nhận đến bạn.';
-    } else if (loaiThanhToan === 'ngan-hang') {
-        message = 'Đặt phòng thành công!\n\nVui lòng chuyển khoản theo thông tin:\n- Ngân hàng: Vietcombank\n- STK: 0123456789\n- Chủ TK: KHACH SAN QUICKSTAY\n- Nội dung: Mã đặt phòng + Họ tên\n\nSau khi chuyển khoản, phòng của bạn sẽ được xác nhận trong vòng 24h.';
+// Hiển thị thông báo thanh toán thành công rồi chuyển về trang chủ
+function hienThiThongBaoThanhCong(type) {
+    try {
+        var title = 'Đặt phòng thành công!';
+        var message = 'Cảm ơn bạn đã đặt phòng. ';
+        if (type === 'tien-mat') {
+            message += 'Vui lòng thanh toán tại quầy lễ tân khi đến nhận phòng.';
+        } else if (type === 'ngan-hang') {
+            message += 'Vui lòng chuyển khoản theo hướng dẫn. Sau khi nhận thanh toán chúng tôi sẽ xác nhận đơn của bạn.';
+        } else {
+            message += 'Thông tin đặt phòng đã được lưu.';
+        }
+
+        var div = document.createElement('div');
+        div.style.position = 'fixed';
+        div.style.left = '50%';
+        div.style.top = '18%';
+        div.style.transform = 'translateX(-50%)';
+        div.style.zIndex = 12000;
+        div.style.minWidth = '320px';
+        div.style.maxWidth = '90%';
+        div.style.background = '#fff';
+        div.style.borderRadius = '10px';
+        div.style.boxShadow = '0 18px 50px rgba(0,0,0,0.35)';
+        div.style.padding = '18px 20px';
+        div.style.textAlign = 'left';
+        div.innerHTML = '<h3 style="margin:0 0 8px 0;color:#0b2540">' + title + '</h3>'
+                      + '<div style="color:#334155; font-size:14px; line-height:1.45;">' + message + '</div>'
+                      + '<div style="text-align:right; margin-top:12px;"><button id="okThanhToanBtn" style="background:#0b63d6;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600">OK</button></div>';
+
+        document.body.appendChild(div);
+
+        var backdrop = document.createElement('div');
+        backdrop.style.position = 'fixed';
+        backdrop.style.inset = '0';
+        backdrop.style.background = 'rgba(0,0,0,0.45)';
+        backdrop.style.zIndex = 11990;
+        document.body.appendChild(backdrop);
+
+        function finish() {
+            try { document.body.removeChild(div); document.body.removeChild(backdrop); } catch(e){}
+            window.location.href = 'index.html';
+        }
+
+        var okBtn = document.getElementById('okThanhToanBtn');
+        if (okBtn) okBtn.addEventListener('click', finish);
+
+        setTimeout(function(){ finish(); }, 3000);
+    } catch (e) {
+        alert('Đặt phòng thành công! Xin chờ chuyển hướng về trang chủ.');
+        window.location.href = 'index.html';
     }
-    
-    alert(message);
-    
-    // KHÔNG xóa bookings - giữ lại để quản trị viên quản lý
-    // Chỉ cập nhật status thành 'confirmed' (đã được làm trong luuThongTinDatPhong)
-    
-    // Chuyển về trang chủ
-    window.location.href = 'index.html';
 }
 
 function formatDate(date) {
