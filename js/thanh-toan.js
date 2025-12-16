@@ -611,19 +611,61 @@ function hienThiThongBaoMa(message, type) {
         });
     }
 
-    // apply code into form + trigger existing apply button
+    // Thay thế hàm applyPromoFromModal bằng bản đặc hiệu cho thanh-toan.html
     function applyPromoFromModal(code) {
-        var maInput = document.querySelector('#inputMaGiamGia, input[placeholder*="MÃ GIẢM"], input[name*="ma"]');
-        if (!maInput) {
-            alert('Không tìm thấy ô nhập mã trên trang.');
+        if (!code) {
+            alert('Mã rỗng');
             return;
         }
+
+        // 1) Tìm ô nhập mã trên trang (theo id bạn đang dùng)
+        var maInput = document.getElementById('inputMaGiamGia') 
+                   || document.querySelector('input[placeholder*="MÃ GIẢM"]') 
+                   || document.querySelector('input[placeholder*="MÃ giảm"]') 
+                   || document.querySelector('input[name*="ma"]');
+
+        if (!maInput) {
+            alert('Không tìm thấy ô nhập mã giảm giá trên trang.');
+            return;
+        }
+
+        // 2) Điền mã vào ô
         maInput.value = code;
-        // try to click existing apply button
-        var applyBtn = document.querySelector('#nutApDungMa, button.btn-ap-dung, button[data-action="apply-promo"]') || Array.from(document.querySelectorAll('button')).find(function(b){ return /áp dụng/i.test(b.textContent); });
-        if (applyBtn) { applyBtn.click(); }
-        else { alert('Đã điền mã: ' + code); }
-        closePromosModal();
+        // (nếu input có event listener oninput, dispatch input để trigger các xử lý)
+        try {
+            maInput.dispatchEvent(new Event('input', { bubbles: true }));
+        } catch (e) {}
+
+        // 3) Tìm nút Áp dụng chính xác theo id bạn dùng
+        var applyBtn = document.getElementById('nutApDungMa') 
+                    || document.getElementById('nutApDung') 
+                    || document.querySelector('button[onclick*="apDungMaGiamGia"]') 
+                    || Array.from(document.querySelectorAll('button')).find(function(b){ return /áp dụng/i.test(b.textContent); });
+
+        // 4) Click nút Áp dụng nếu tìm thấy để hệ thống xử lý mã như bình thường
+        if (applyBtn) {
+            try {
+                applyBtn.click();
+            } catch (e) {
+                // fallback: gọi hàm áp dụng nếu tồn tại
+                if (typeof apDungMaGiamGia === 'function') {
+                    try { apDungMaGiamGia(); } catch (err) { console.warn(err); }
+                }
+            }
+        } else {
+            // Nếu không tìm thấy, cảnh báo và đóng modal
+            alert('Đã gán mã: ' + code + '. Vui lòng nhấn "Áp dụng" để xác nhận.');
+        }
+
+        // 5) Đóng modal (nếu có)
+        try { 
+            var modalEl = document.getElementById('promoModal');
+            if (modalEl) {
+                // nếu dùng class "show" để animate, remove
+                modalEl.classList.remove('show');
+                setTimeout(function(){ modalEl.style.display = 'none'; }, 220);
+            }
+        } catch (e) { /* không quan trọng */ }
     }
 
     // modal open/close (query DOM lazily to avoid null when script loads early)
