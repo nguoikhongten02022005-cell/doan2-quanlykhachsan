@@ -226,33 +226,39 @@ function thucHienThanhToan() {
     
     // Simulate thanh toán
     setTimeout(function() {
-        luuThongTinDatPhong();
-        
-        if (phuongThuc === 'tien-mat') {
-            // Thanh toán tại khách sạn
-            hienThiThongBaoThanhCong('tien-mat');
-        } else if (phuongThuc === 'ngan-hang') {
-            // Chuyển khoản ngân hàng
-            hienThiThongBaoThanhCong('ngan-hang');
+        // Với gateway thực tế, thay bằng callback success từ gateway
+        var paymentOk = true; // giả lập thành công
+
+        if (paymentOk) {
+            // finalize = true => mark confirmed/paid
+            luuThongTinDatPhong(true);
+            hienThiThongBaoThanhCong(phuongThuc);
+        } else {
+            // Lưu thông tin nhưng giữ pending
+            luuThongTinDatPhong(false);
+            alert('Thanh toán thất bại. Vui lòng thử lại.');
+            // khôi phục nút
+            nutThanhToan.disabled = false;
+            nutThanhToan.innerHTML = '<i class="fas fa-lock"></i><span>Thanh toán ngay</span>';
         }
     }, 2000);
 }
 
-function luuThongTinDatPhong() {
+function luuThongTinDatPhong(finalize = false) {
     var allBookings = storageService.getBookings();
     // Chỉ cập nhật các booking chưa thanh toán (status = 'pending')
     var bookings = allBookings.filter(function(booking) {
         var status = booking.status || 'pending';
         return status === 'pending';
     });
-    
+
     var hoTen = document.getElementById('hoTen').value.trim();
     var email = document.getElementById('email').value.trim();
     var soDienThoai = document.getElementById('soDienThoai').value.trim();
     var cmnd = document.getElementById('cmnd').value.trim();
     var ghiChu = document.getElementById('ghiChu').value.trim();
-    var phuongThuc = document.querySelector('input[name="phuongThuc"]:checked').value;
-    
+    var phuongThuc = (document.querySelector('input[name="phuongThuc"]:checked') || {}).value || 'ngan-hang';
+
     // Lấy thông tin user hiện tại
     var currentUser = localStorage.getItem('currentUser');
     var userId = null;
@@ -260,10 +266,9 @@ function luuThongTinDatPhong() {
         try {
             var userInfo = JSON.parse(currentUser);
             userId = userInfo.id || userInfo.username;
-        } catch(e) {
-        }
+        } catch(e) {}
     }
-    
+
     // Cập nhật thông tin khách hàng cho các booking chưa thanh toán
     for (var i = 0; i < bookings.length; i++) {
         // Đảm bảo có userId
@@ -271,7 +276,7 @@ function luuThongTinDatPhong() {
             bookings[i].userId = userId;
             bookings[i].customerId = userId;
         }
-        
+
         bookings[i].customerInfo = {
             hoTen: hoTen,
             email: email,
@@ -283,19 +288,21 @@ function luuThongTinDatPhong() {
         bookings[i].customer = hoTen;
         bookings[i].email = email;
         bookings[i].phone = soDienThoai;
-        bookings[i].status = 'pending';
         bookings[i].paymentDate = new Date().toISOString();
-        
-        // Cập nhật phương thức thanh toán
-        if (phuongThuc === 'tien-mat') {
-            bookings[i].paymentMethod = 'Tiền mặt';
-        } else if (phuongThuc === 'ngan-hang') {
-            bookings[i].paymentMethod = 'Chuyển khoản';
-        } else if (phuongThuc === 'vnpay') {
-            bookings[i].paymentMethod = 'VNPay';
+
+        // **THAY ĐỔI CHÍNH**: chỉ set status = 'confirmed' nếu finalize===true,
+        // nếu finalize === false thì giữ 'pending'
+        if (finalize) {
+            bookings[i].status = 'confirmed';
+        } else {
+            bookings[i].status = 'pending';
         }
-        
-        // Lưu thông tin mã giảm giá nếu có
+
+        // phương thức thanh toán
+        if (phuongThuc === 'tien-mat') bookings[i].paymentMethod = 'Tiền mặt';
+        else if (phuongThuc === 'ngan-hang') bookings[i].paymentMethod = 'Chuyển khoản';
+        else if (phuongThuc === 'vnpay') bookings[i].paymentMethod = 'VNPay';
+
         if (maGiamGiaDangApDung) {
             bookings[i].promotion = {
                 code: maGiamGiaDangApDung.code,
@@ -304,20 +311,22 @@ function luuThongTinDatPhong() {
             };
         }
     }
-    
-    // Cập nhật lại vào allBookings
-    for (var i = 0; i < bookings.length; i++) {
-        var bookingId = bookings[i].id;
-        var index = allBookings.findIndex(function(b) { return b.id === bookingId; });
-        if (index !== -1) {
-            allBookings[index] = bookings[i];
+
+    // Cập nhật lại allBookings: replace by id
+    for (var j = 0; j < allBookings.length; j++) {
+        for (var k = 0; k < bookings.length; k++) {
+            if (allBookings[j].id === bookings[k].id) {
+                allBookings[j] = bookings[k];
+                break;
+            }
         }
     }
-    
+
+    // Lưu lại toàn bộ danh sách
     storageService.saveBookings(allBookings);
-    
-    // Cập nhật số lượng đã sử dụng của mã giảm giá
-    if (maGiamGiaDangApDung) {
+
+    // Cập nhật số lượng đã sử dụng của mã giảm giá (nếu finalize)
+    if (maGiamGiaDangApDung && finalize) {
         capNhatSoLuongMaGiamGia(maGiamGiaDangApDung.code);
     }
 }
