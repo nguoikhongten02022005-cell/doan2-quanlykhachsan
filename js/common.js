@@ -65,87 +65,27 @@ function checkLoginStatus() {
 
 
 // --- ensureAuthenticated: kiểm tra đăng nhập, nếu chưa thì chuyển tới login ---
-
 function ensureAuthenticated(options = {}) {
-
     try {
-
         var currentUserStr = localStorage.getItem('currentUser');
-
         if (currentUserStr) {
-
             try {
-
                 return JSON.parse(currentUserStr);
-
             } catch (e) {
-
                 console.warn('Lỗi parse currentUser:', e);
-
             }
-
         }
-
     } catch (e) {
-
         console.warn('Lỗi đọc currentUser:', e);
-
     }
 
     // Nếu chưa đăng nhập, hỏi và điều hướng tới login với returnUrl
-
     var message = options.message || 'Bạn cần đăng nhập để tiếp tục. Chuyển đến trang đăng nhập?';
-
     if (confirm(message)) {
-
         var returnUrl = options.returnUrl || window.location.href;
-
         window.location.href = 'login.html?returnUrl=' + encodeURIComponent(returnUrl);
-
     }
-
     return null;
-
-}) {
-
-    try {
-
-        var currentUserStr = localStorage.getItem('currentUser');
-
-        if (currentUserStr) {
-
-            try {
-
-                return JSON.parse(currentUserStr);
-
-            } catch (e) {
-
-                console.warn('Lỗi parse currentUser:', e);
-
-            }
-
-        }
-
-    } catch (e) {
-
-        console.warn('Lỗi đọc currentUser:', e);
-
-    }
-
-    // Nếu chưa đăng nhập, hỏi và điều hướng tới login với returnUrl
-
-    var message = options.message || 'Bạn cần đăng nhập để tiếp tục. Chuyển đến trang đăng nhập?';
-
-    if (confirm(message)) {
-
-        var returnUrl = options.returnUrl || window.location.href;
-
-        window.location.href = 'login.html?returnUrl=' + encodeURIComponent(returnUrl);
-
-    }
-
-    return null;
-
 }
 // Toggle user menu dropdown
 function toggleUserMenu(event) {
