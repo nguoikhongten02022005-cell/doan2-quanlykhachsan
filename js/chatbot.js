@@ -1,7 +1,7 @@
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = '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';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-// Cập nhật model sang Amazon Nova Lite theo yêu cầu
-const MODEL = 'google/gemma-3-4b-it:free';
+// Đổi model sang Nvidia Nemotron 3 Nano 30B (free)
+const MODEL = 'nvidia/nemotron-3-nano-30b-a3b:free';
 
 let chatHistory = [];
 let isOpen = false;
