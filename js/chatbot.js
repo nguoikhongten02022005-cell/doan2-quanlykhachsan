@@ -186,21 +186,17 @@ Vui lòng hướng dẫn khách xem thông tin chi tiết trên website hoặc l
 }
 
 function initChatbot() {
-    // ✅ Guard: tránh bind event 2 lần (khi chatbot.js bị load/DOM init 2 lần)
-    if (window.__quickstayChatbotInited) return;
-    window.__quickstayChatbotInited = true;
-
     const button = document.getElementById('chatbotButton');
-    const windowEl = document.getElementById('chatbotWindow');
+    const window = document.getElementById('chatbotWindow');
     const closeBtn = document.getElementById('chatbotClose');
     const sendBtn = document.getElementById('chatbotSend');
     const input = document.getElementById('chatbotInput');
 
-    if (!button || !windowEl) return;
+    if (!button || !window) return;
 
     button.addEventListener('click', () => {
         isOpen = !isOpen;
-        windowEl.classList.toggle('active', isOpen);
+        window.classList.toggle('active', isOpen);
         if (isOpen) {
             input.focus();
             if (chatHistory.length === 0) {
@@ -211,7 +207,7 @@ function initChatbot() {
 
     closeBtn.addEventListener('click', () => {
         isOpen = false;
-        windowEl.classList.remove('active');
+        window.classList.remove('active');
     });
 
     sendBtn.addEventListener('click', sendMessage);
@@ -299,13 +295,17 @@ async function sendMessage() {
                     ...chatHistory
                 ],
                 temperature: 0.3,
-                max_tokens: 500
+                max_tokens: 500,
+                // ✅ thêm cái này
+                provider: { allow_fallbacks: true }
             })
         });
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error?.message || `Lỗi ${response.status}: ${response.statusText}`);
+            console.log('OpenRouter status:', response.status);
+            console.log('OpenRouter errorData:', errorData);
+            throw new Error(errorData?.error?.message || `Lỗi ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
