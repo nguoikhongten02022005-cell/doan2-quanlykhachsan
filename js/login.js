@@ -71,60 +71,67 @@ function setupPasswordToggle() {
     }
 }
 
-// Thiết lập form đăng nhập
+// Thiết lập form đăng nhập - (CẬP NHẬT: kiểm tra cả customers và accounts)
 function setupLoginForm() {
     var loginForm = document.getElementById('loginForm');
-    
+    if (!loginForm) return;
+
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         var username = document.getElementById('loginUsername').value.trim();
         var password = document.getElementById('loginPassword').value;
         var rememberMe = document.getElementById('rememberMe').checked;
-        
+
         // Validation đơn giản
         if (!username || !password) {
             showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
             return;
         }
-        
+
         if (username.length < 3) {
             showNotification('Tên đăng nhập phải có ít nhất 3 ký tự!', 'error');
             return;
         }
-        
-        // Kiểm tra user có tồn tại không
+
+        // Lấy cả customers và accounts để tìm người dùng
         var customers = JSON.parse(localStorage.getItem('customers') || '[]');
+        var accounts  = JSON.parse(localStorage.getItem('accounts')  || '[]');
+        var allUsers = customers.concat(accounts || []);
+
+        // So sánh không phân biệt hoa/thường
+        var unameLower = username.toLowerCase();
         var foundUser = null;
-        for (var i = 0; i < customers.length; i++) {
-            if (customers[i].username === username) {
-                foundUser = customers[i];
+        for (var i = 0; i < allUsers.length; i++) {
+            var u = allUsers[i];
+            if (!u || !u.username) continue;
+            if (String(u.username).toLowerCase() === unameLower) {
+                foundUser = u;
                 break;
             }
         }
-        
+
         if (!foundUser) {
             showNotification('Tên đăng nhập không tồn tại!', 'error');
             return;
         }
-        
+
         // Kiểm tra mật khẩu (nếu có)
         if (foundUser.password && foundUser.password !== password) {
             showNotification('Mật khẩu không đúng!', 'error');
             return;
         }
-        
-        // Hiển thị loading
-        showButtonLoading(this.querySelector('.nut-xac-thuc'));
-        
-        // Giả lập đăng nhập (sau 2 giây)
+
+        // Hiển thị loading trên button
+        showButtonLoading(loginForm.querySelector('.nut-xac-thuc'));
+
+        // Giả lập đăng nhập
         setTimeout(function() {
-            // Lưu thông tin đăng nhập đầy đủ
             var userData = {
                 id: foundUser.id,
-                username: username,
-                email: foundUser.email,
-                name: foundUser.name,
+                username: foundUser.username,
+                email: foundUser.email || '',
+                name: foundUser.name || foundUser.username,
                 phone: foundUser.phone || '',
                 role: foundUser.role || 'customer',
                 loginTime: new Date().toISOString(),
@@ -132,26 +139,26 @@ function setupLoginForm() {
                 sessionToken: 'token-' + Date.now()
             };
 
-            // Chỉ lưu vào currentUser
             localStorage.setItem('authToken', userData.sessionToken);
             localStorage.setItem('currentUser', JSON.stringify(userData));
-            
-            showNotification('Đăng nhập thành công! Xin chào ' + foundUser.name, 'success');
-            
-            // Kiểm tra có returnUrl không (từ trang đặt phòng)
+
+            showNotification('Đăng nhập thành công! Xin chào ' + (foundUser.name || foundUser.username), 'success');
+
+            // Redirect: nếu có returnUrl dùng returnUrl, nếu role là admin -> quản trị, ngược lại về index
             var urlParams = new URLSearchParams(window.location.search);
             var returnUrl = urlParams.get('returnUrl');
-            
-            // Chuyển về trang trước đó hoặc trang chủ sau 1.5 giây
+
             setTimeout(function() {
                 if (returnUrl) {
                     window.location.href = decodeURIComponent(returnUrl);
+                } else if (userData.role && userData.role.toLowerCase() === 'admin') {
+                    window.location.href = 'quantrivien.html';
                 } else {
                     window.location.href = 'index.html';
                 }
-            }, 1500);
-            
-        }, 2000);
+            }, 1200);
+
+        }, 800);
     });
 }
 
