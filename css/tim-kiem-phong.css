@@ -29,7 +29,7 @@
   flex: 0 0 42%;
   max-width: 42%;
   min-width: 220px;
-  height: 260px;
+  height: 160px;
   border-radius: 10px;
   overflow: hidden;
   background: #f6f7fb;
@@ -102,7 +102,7 @@
 /* Khi ở chế độ lưới, vẫn giữ responsive */
 @media (max-width: 1024px) {
     .noi-dung-ket-qua .the-phong { gap: 16px; }
-    .noi-dung-ket-qua .the-phong .anh-phong { flex: 0 0 360px; height: 220px; }
+    .noi-dung-ket-qua .the-phong .anh-phong { flex: 0 0 360px; height: 150px; }
     .price-cta { min-width: 160px; }
 }
 @media (max-width: 820px) {
@@ -113,7 +113,7 @@
     }
     .noi-dung-ket-qua .the-phong .anh-phong {
         width: 100%;
-        height: 280px;
+        height: 180px;
         flex: none;
     }
     .price-cta {
@@ -384,6 +384,17 @@
     border-color: #2563eb;
 }
 
+/* Container cho kết quả tìm kiếm - đảm bảo layout không bị chồng lấp */
+#searchResultsContainer {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding: 0 !important;
+}
+
 .danh-sach-ket-qua {
     display: flex;
     flex-direction: column;
@@ -392,6 +403,7 @@
     /* Xóa padding cứng nếu nó gây lệch */
     padding: 0; 
     background: transparent; /* Để nền trắng của cha hiển thị */
+    box-sizing: border-box !important;
 }
 
 /* Style tiện nghi - đồng bộ với trang chủ */
@@ -849,7 +861,7 @@
 /* Left: image block */
 .the-phong .anh-phong {
     flex: 0 0 420px;   /* cố định chiều rộng ảnh trên desktop */
-    height: 260px;
+    height: 160px;
     border-radius: 10px;
     overflow: hidden;
     position: relative;
@@ -972,7 +984,7 @@
 
 /* ===== Responsive: mobile & tablet ===== */
 @media (max-width: 1024px) {
-    .the-phong .anh-phong { flex: 0 0 360px; height: 220px; }
+    .the-phong .anh-phong { flex: 0 0 360px; height: 150px; }
     .price-cta { min-width: 160px; }
 }
 
@@ -985,7 +997,7 @@
     }
     .the-phong .anh-phong {
         width: 100%;
-        height: 280px;
+        height: 180px;
         flex: none;
     }
     .price-cta {
@@ -1000,3 +1012,319 @@
     .btns-cta { gap: 8px; }
     .header-ket-qua h1 { font-size: 22px; }
 }
+
+/* ==== FORCE: cân bằng layout card tìm kiếm ==== */
+/* tăng specificity để ghi đè rule khác */
+#searchResultsContainer .the-phong,
+.danh-sach-ket-qua .the-phong,
+.noi-dung-ket-qua .the-phong,
+.the-phong {
+  display: flex !important;
+  flex-direction: row !important; /* Đảm bảo nằm ngang */
+  gap: 22px !important;
+  align-items: stretch !important;
+  padding: 18px !important;
+  border-radius: 12px !important;
+  overflow: visible !important; /* Đổi từ hidden sang visible để không cắt */
+  min-height: 180px !important; /* đảm bảo nội dung cùng chiều cao với ảnh */
+  background: #fff !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  margin-bottom: 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Ảnh: chiếm ~40% */
+#searchResultsContainer .the-phong > .anh-phong,
+.danh-sach-ket-qua .the-phong > .anh-phong,
+.noi-dung-ket-qua .the-phong > .anh-phong,
+.the-phong > .anh-phong {
+  flex: 0 0 40% !important;
+  max-width: 40% !important;
+  min-width: 220px !important;
+  width: 40% !important; /* Đảm bảo width cố định */
+  height: 160px !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  background: #f6f7fb !important;
+  flex-shrink: 0 !important; /* Không cho co lại */
+}
+#searchResultsContainer .the-phong > .anh-phong img,
+.danh-sach-ket-qua .the-phong > .anh-phong img,
+.noi-dung-ket-qua .the-phong > .anh-phong img,
+.the-phong > .anh-phong img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Nội dung phải: đầy đủ chiều cao, chia top + bottom */
+#searchResultsContainer .the-phong > .noi-dung-phong,
+.danh-sach-ket-qua .the-phong > .noi-dung-phong,
+.noi-dung-ket-qua .the-phong > .noi-dung-phong,
+.the-phong > .noi-dung-phong {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 10px 18px !important;
+  min-height: 160px !important;
+  width: 60% !important; /* Đảm bảo chiếm phần còn lại */
+  min-width: 0 !important; /* Cho phép flex shrink nếu cần */
+  box-sizing: border-box !important;
+}
+
+/* Giữ tiêu đề + info trên cùng */
+#searchResultsContainer .the-phong .tieu-de-phong,
+.danh-sach-ket-qua .the-phong .tieu-de-phong,
+.noi-dung-ket-qua .the-phong .tieu-de-phong,
+.the-phong .tieu-de-phong {
+  display: flex !important;
+  flex-direction: column !important; /* Đổi thành column để tiêu đề và sức chứa xếp dọc */
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+/* Phần dưới: đường kẻ + giá bên trái + nút bên phải */
+#searchResultsContainer .the-phong .phan-duoi,
+.danh-sach-ket-qua .the-phong .phan-duoi,
+.noi-dung-ket-qua .the-phong .phan-duoi,
+.the-phong .phan-duoi {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  border-top: 1px solid #e6edf6 !important;
+  padding-top: 12px !important;
+  margin-top: 12px !important;
+}
+
+/* price-cta có trong phàn dưới */
+#searchResultsContainer .the-phong .phan-duoi .price-cta,
+.danh-sach-ket-qua .the-phong .phan-duoi .price-cta,
+.noi-dung-ket-qua .the-phong .phan-duoi .price-cta,
+.the-phong .phan-duoi .price-cta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  gap: 12px !important;
+}
+
+/* giá lớn bên trái */
+#searchResultsContainer .the-phong .phan-duoi .price-cta .gia-phong,
+.danh-sach-ket-qua .the-phong .phan-duoi .price-cta .gia-phong,
+.noi-dung-ket-qua .the-phong .phan-duoi .price-cta .gia-phong,
+.the-phong .phan-duoi .price-cta .gia-phong {
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  color: #2563eb !important;
+}
+
+/* nhóm nút ở phải */
+#searchResultsContainer .the-phong .phan-duoi .btns-cta,
+.danh-sach-ket-qua .the-phong .phan-duoi .btns-cta,
+.noi-dung-ket-qua .the-phong .phan-duoi .btns-cta,
+.the-phong .phan-duoi .btns-cta {
+  display: flex !important;
+  gap: 10px !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  min-width: 200px !important;
+}
+
+/* Tag tiện nghi có wrap - tránh đẩy layout */
+#searchResultsContainer .the-phong .tien-ich-phong,
+.danh-sach-ket-qua .the-phong .tien-ich-phong,
+.noi-dung-ket-qua .the-phong .tien-ich-phong,
+.the-phong .tien-ich-phong {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+}
+
+/* Responsive: stacked trên mobile */
+@media (max-width: 820px) {
+  .danh-sach-ket-qua .the-phong,
+  .noi-dung-ket-qua .the-phong {
+    flex-direction: column !important;
+    min-height: auto !important;
+  }
+  .danh-sach-ket-qua .the-phong > .anh-phong,
+  .noi-dung-ket-qua .the-phong > .anh-phong {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    height: 160px !important;
+  }
+  .danh-sach-ket-qua .the-phong .phan-duoi,
+  .noi-dung-ket-qua .the-phong .phan-duoi {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  .danh-sach-ket-qua .the-phong .phan-duoi .btns-cta,
+  .noi-dung-ket-qua .the-phong .phan-duoi .btns-cta { min-width: 0 !important; }
+}
+
+/* ==== Styling cho giao diện như hình ảnh ==== */
+
+/* Badge giảm giá trên ảnh */
+#searchResultsContainer .the-phong .anh-phong,
+.danh-sach-ket-qua .the-phong .anh-phong,
+.noi-dung-ket-qua .the-phong .anh-phong,
+.the-phong .anh-phong {
+  position: relative;
+}
+#searchResultsContainer .the-phong .anh-phong .badge-giam-gia,
+.danh-sach-ket-qua .the-phong .anh-phong .badge-giam-gia,
+.noi-dung-ket-qua .the-phong .anh-phong .badge-giam-gia,
+.the-phong .anh-phong .badge-giam-gia {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #ff6b35;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Số ảnh overlay */
+#searchResultsContainer .the-phong .anh-phong .so-anh-overlay,
+.danh-sach-ket-qua .the-phong .anh-phong .so-anh-overlay,
+.noi-dung-ket-qua .the-phong .anh-phong .so-anh-overlay,
+.the-phong .anh-phong .so-anh-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  z-index: 2;
+}
+
+/* Tiêu đề phòng */
+#searchResultsContainer .the-phong .ten-phong,
+.danh-sach-ket-qua .the-phong .ten-phong,
+.noi-dung-ket-qua .the-phong .ten-phong,
+.the-phong .ten-phong {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+}
+
+/* Sức chứa với icon */
+#searchResultsContainer .the-phong .suc-chua-phong,
+.danh-sach-ket-qua .the-phong .suc-chua-phong,
+.noi-dung-ket-qua .the-phong .suc-chua-phong,
+.the-phong .suc-chua-phong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
+#searchResultsContainer .the-phong .suc-chua-phong i,
+.danh-sach-ket-qua .the-phong .suc-chua-phong i,
+.noi-dung-ket-qua .the-phong .suc-chua-phong i,
+.the-phong .suc-chua-phong i {
+  color: #2563eb;
+  font-size: 1rem;
+}
+
+/* Label dịch vụ đặc biệt */
+#searchResultsContainer .the-phong .label-dich-vu,
+.danh-sach-ket-qua .the-phong .label-dich-vu,
+.noi-dung-ket-qua .the-phong .label-dich-vu,
+.the-phong .label-dich-vu {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+/* Tag tiện nghi màu tím nhạt */
+#searchResultsContainer .the-phong .tien-ich-phong .tien-ich,
+.danh-sach-ket-qua .the-phong .tien-ich-phong .tien-ich,
+.noi-dung-ket-qua .the-phong .tien-ich-phong .tien-ich,
+.the-phong .tien-ich-phong .tien-ich {
+  background: #f3e8ff;
+  color: #7c3aed;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e9d5ff;
+}
+#searchResultsContainer .the-phong .tien-ich-phong .tien-ich i,
+.danh-sach-ket-qua .the-phong .tien-ich-phong .tien-ich i,
+.noi-dung-ket-qua .the-phong .tien-ich-phong .tien-ich i,
+.the-phong .tien-ich-phong .tien-ich i {
+  font-size: 0.8rem;
+  color: #7c3aed;
+}
+
+/* Nút Chi Tiết */
+#searchResultsContainer .the-phong .phan-duoi .btn-detail,
+.danh-sach-ket-qua .the-phong .phan-duoi .btn-detail,
+.noi-dung-ket-qua .the-phong .phan-duoi .btn-detail,
+.the-phong .phan-duoi .btn-detail {
+  background: #fff !important;
+  color: #2563eb !important;
+  border: 2px solid #2563eb !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#searchResultsContainer .the-phong .phan-duoi .btn-detail:hover,
+.danh-sach-ket-qua .the-phong .phan-duoi .btn-detail:hover,
+.noi-dung-ket-qua .the-phong .phan-duoi .btn-detail:hover,
+.the-phong .phan-duoi .btn-detail:hover {
+  background: #eff6ff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* Nút Đặt Ngay */
+#searchResultsContainer .the-phong .phan-duoi .btn-book,
+.danh-sach-ket-qua .the-phong .phan-duoi .btn-book,
+.noi-dung-ket-qua .the-phong .phan-duoi .btn-book,
+.the-phong .phan-duoi .btn-book {
+  background: linear-gradient(90deg, #7c3aed, #2563eb) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+}
+#searchResultsContainer .the-phong .phan-duoi .btn-book:hover,
+.danh-sach-ket-qua .the-phong .phan-duoi .btn-book:hover,
+.noi-dung-ket-qua .the-phong .phan-duoi .btn-book:hover,
+.the-phong .phan-duoi .btn-book:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4) !important;
+}
+
+/* Cải thiện layout tieu-de-phong - đã được định nghĩa ở trên */
