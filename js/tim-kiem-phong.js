@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // If price was inside title, move or clone it
         var priceClone;
         if (priceNode) {
-            priceClone = priceNode; // move node to the right column (reuse)
+            priceClone = priceNode; // reuse the node (will be moved)
         } else {
             priceClone = document.createElement('div');
             priceClone.className = 'gia-phong';
@@ -137,8 +137,34 @@ document.addEventListener('DOMContentLoaded', function() {
         btns.appendChild(btnBook);
         priceCta.appendChild(btns);
 
-        // Append price-cta at end of card (flex will show it to the right)
-        card.appendChild(priceCta);
+        // --- NEW: put priceCta inside .phan-duoi (create if missing) inside .noi-dung-phong ---
+        var noi = card.querySelector('.noi-dung-phong');
+        if (!noi) {
+            // if there's no .noi-dung-phong, create it and move existing non-image children there
+            noi = document.createElement('div');
+            noi.className = 'noi-dung-phong';
+            var children = Array.from(card.children);
+            children.forEach(function(ch) {
+                if (ch === null) return;
+                if (ch.classList && ch.classList.contains('anh-phong')) return;
+                // skip priceCta (not yet attached)
+                if (ch === priceCta) return;
+                noi.appendChild(ch);
+            });
+            // insert after anh-phong if exists
+            var anh = card.querySelector('.anh-phong');
+            if (anh && anh.nextSibling) card.insertBefore(noi, anh.nextSibling);
+            else card.appendChild(noi);
+        }
+
+        var phan = noi.querySelector('.phan-duoi');
+        if (!phan) {
+            phan = document.createElement('div');
+            phan.className = 'phan-duoi';
+            noi.appendChild(phan);
+        }
+        // move priceCta into phan-duoi
+        phan.appendChild(priceCta);
 
         // get room id from card onclick (if exists)
         var onclick = card.getAttribute('onclick') || '';
@@ -150,8 +176,10 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             if (roomId) window.location.href = 'room-detail.html?id=' + roomId;
             else {
-                // fallback: click card
-                card.click();
+                // try to find a link inside card or click card
+                var a = card.querySelector('a');
+                if (a && a.href) window.location.href = a.href;
+                else card.click();
             }
         });
         btnBook.addEventListener('click', function(e) {
@@ -185,9 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         mo.observe(container, { childList: true, subtree: true });
-
-        // keep observer for a while (or you can leave it connected)
-        setTimeout(function(){ mo.disconnect(); }, 15000);
+        // keep it alive (do NOT disconnect) so future pages also get transformed
     }
 
     if (document.readyState === 'loading') {
