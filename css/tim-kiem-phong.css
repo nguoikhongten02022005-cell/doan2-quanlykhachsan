@@ -167,6 +167,8 @@
 .nut-tim-kiem-chinh {
     background: #2563eb !important;
 
+}
+
 .nut-nhanh {
     padding: 8px 16px;
     border: 2px solid #0071c2;
@@ -1034,5 +1036,3 @@
     .btns-cta { gap: 8px; }
     .header-ket-qua h1 { font-size: 22px; }
 }
-
-/* Giải thích ngắn: .hop-chua-tim-kiem đảm bảo vùng chính nằm giữa, tối đa 1200px. */
