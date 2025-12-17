@@ -1,0 +1,248 @@
+/* ==========================================================
+   SỬA LỖI RESPONSIVE – TRANG TÌM KIẾM PHÒNG (TIM-KIEM-PHONG)
+   Mục tiêu:
+   - Không tràn ngang (mobile/tablet)
+   - Card list/grid đẹp, không bó chữ
+   - Đè được các rule cũ (kể cả !important) nếu còn sót
+========================================================== */
+
+html, body { overflow-x: hidden; }
+
+/* ---- Header control (sort + view) không bị tràn ---- */
+.noi-dung-ket-qua .thanh-dieu-khien { flex-wrap: wrap; gap: 12px; }
+.noi-dung-ket-qua .sap-xep select { max-width: 100%; }
+
+/* ---- Container results ---- */
+#searchResultsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ==========================================================
+   LIST VIEW (mặc định)
+========================================================== */
+#searchResultsContainer .the-phong {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 24px;
+
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+
+#searchResultsContainer .the-phong .anh-phong {
+  flex: 0 0 clamp(220px, 42%, 420px);
+  min-width: 0;
+  height: 180px;
+  padding-top: 0 !important; /* chặn padding-top 60% cũ */
+  overflow: hidden;
+}
+
+#searchResultsContainer .the-phong .anh-phong img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+#searchResultsContainer .the-phong .noi-dung-phong {
+  flex: 1 1 auto;
+  min-width: 0; /* cực quan trọng: không bó chữ */
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+#searchResultsContainer .the-phong .tieu-de-phong {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Phòng khi JS chưa kịp thêm class ten-phong */
+#searchResultsContainer .the-phong .ten-phong,
+#searchResultsContainer .the-phong .tieu-de-phong h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#searchResultsContainer .the-phong .suc-chua-phong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#searchResultsContainer .the-phong .mo-ta-phong {
+  margin: 10px 0 0;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+#searchResultsContainer .the-phong .tien-ich-phong-tim-kiem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+#searchResultsContainer .the-phong .tien-ich {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  color: #2563eb;
+  font-size: 14px;
+}
+
+/* Price + CTA */
+#searchResultsContainer .the-phong .phan-duoi {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f7;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+#searchResultsContainer .the-phong .gia-phong {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: #2563eb;
+}
+
+#searchResultsContainer .the-phong .btns-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+#searchResultsContainer .the-phong .btns-cta .btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 800;
+  border: 1px solid #2563eb;
+  background: #fff;
+  color: #2563eb;
+  min-width: 120px;
+}
+
+#searchResultsContainer .the-phong .btns-cta .btn-book {
+  background: #2563eb;
+  color: #fff;
+}
+
+/* ==========================================================
+   MOBILE (<=820px): ép card về cột để "không bao giờ lôi"
+========================================================== */
+@media (max-width: 820px) {
+  #searchResultsContainer .the-phong {
+    flex-direction: column !important; /* đè mọi FORCE cũ nếu còn */
+    gap: 0;
+  }
+
+  #searchResultsContainer .the-phong .anh-phong {
+    flex: none !important;
+    width: 100% !important;
+    height: 200px;
+  }
+
+  #searchResultsContainer .the-phong .noi-dung-phong {
+    padding: 16px;
+  }
+
+  #searchResultsContainer .the-phong .phan-duoi {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  #searchResultsContainer .the-phong .btns-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  #searchResultsContainer .the-phong .btns-cta .btn {
+    flex: 1 1 140px;
+  }
+}
+
+/* ==========================================================
+   GRID VIEW
+========================================================== */
+#searchResultsContainer.grid-view {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important; /* không dùng 400px */
+  gap: 24px !important;
+  align-items: stretch;
+}
+
+#searchResultsContainer.grid-view .the-phong {
+  max-width: none;
+  margin: 0;
+  flex-direction: column;
+}
+
+#searchResultsContainer.grid-view .the-phong .anh-phong {
+  flex: none;
+  width: 100%;
+  height: 220px;
+}
+
+#searchResultsContainer.grid-view .the-phong .noi-dung-phong {
+  padding: 16px;
+}
+
+@media (max-width: 480px) {
+  #searchResultsContainer { gap: 16px; }
+  #searchResultsContainer.grid-view { grid-template-columns: 1fr !important; }
+}
+
+/* ==========================================================
+   POPUP LỊCH: chặn inline min-width 600 gây tràn
+========================================================== */
+#hopLichTim {
+  min-width: 0 !important;
+  max-width: calc(100vw - 24px) !important;
+}
+
+/* (Tuỳ chọn) POPUP khách/phòng dạng "bottom sheet" trên mobile */
+@media (max-width: 600px) {
+  #hopKhachTim {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    top: auto;
+    width: auto;
+    max-height: calc(100vh - 140px);
+    overflow: auto;
+    z-index: 10000;
+  }
+}
+

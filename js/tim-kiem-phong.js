@@ -104,7 +104,7 @@ function khoiTaoDatePickerTimKiem() {
     if (!truongNgay) return;
     
     var popupHTML = `
-        <div class="hop-lich-tim" id="hopLichTim" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 10px; background: #fff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); padding: 20px; z-index: 10000; min-width: 600px; width: max-content; max-width: 90vw;">
+        <div class="hop-lich-tim" id="hopLichTim" style="display:none;">
             <div class="khung-lich-tim" style="display: flex; align-items: center; gap: 20px;">
                 <button type="button" class="dieu-huong-thang-tim" id="thangTruocTim" style="background: #f5f5f5; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; flex-shrink: 0;"
                         onmouseenter="this.style.background='#1976d2'; this.style.color='#fff'"
@@ -560,6 +560,7 @@ function displayResults(rooms) {
     tieuDe.className = 'tieu-de-phong';
 
     const h3 = document.createElement('h3');
+    h3.className = 'ten-phong'; // THÊM DÒNG NÀY
     h3.textContent = (room && room.name) ? room.name : 'Phòng';
     tieuDe.appendChild(h3);
 
