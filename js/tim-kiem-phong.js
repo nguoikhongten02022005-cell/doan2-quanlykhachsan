@@ -98,29 +98,32 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-/* Enhance search cards: move price to right + add CTA */
-(function enhanceSearchCards() {
-    function processCard(card) {
+/* ===== Enhance search cards: add right-hand price + CTA (idempotent) ===== */
+(function() {
+    function enhanceCard(card) {
         if (!card || card.dataset.enhanced === '1') return;
         card.dataset.enhanced = '1';
 
-        // lấy giá hiện có (nếu có) từ .gia-phong
-        var gia = card.querySelector('.gia-phong');
-        // tạo price-cta
+        // ensure class names consistent
+        var priceNode = card.querySelector('.gia-phong');
+        // If price was inside title, move or clone it
+        var priceClone;
+        if (priceNode) {
+            priceClone = priceNode; // move node to the right column (reuse)
+        } else {
+            priceClone = document.createElement('div');
+            priceClone.className = 'gia-phong';
+            priceClone.textContent = '';
+        }
+
+        // create price-cta container
         var priceCta = document.createElement('div');
         priceCta.className = 'price-cta';
 
-        // clone price nếu có
-        if (gia) {
-            priceCta.appendChild(gia); // chuyển chính node (không clone) để giữ format
-        } else {
-            var empty = document.createElement('div');
-            empty.className = 'gia-phong';
-            empty.textContent = '';
-            priceCta.appendChild(empty);
-        }
+        // Add price
+        priceCta.appendChild(priceClone);
 
-        // nút
+        // create button group
         var btns = document.createElement('div');
         btns.className = 'btns-cta';
         var btnDetail = document.createElement('button');
@@ -134,62 +137,63 @@ document.addEventListener('DOMContentLoaded', function() {
         btns.appendChild(btnBook);
         priceCta.appendChild(btns);
 
-        // thêm vào card (phía cuối để nó nằm ở bên phải do flex)
+        // Append price-cta at end of card (flex will show it to the right)
         card.appendChild(priceCta);
 
-        // Lấy room id từ onclick attribute nếu card onclick có dạng room-detail.html?id=NN
-        var onclickAttr = card.getAttribute('onclick') || '';
-        var match = onclickAttr.match(/room-detail\.html\?id=(\d+)/);
+        // get room id from card onclick (if exists)
+        var onclick = card.getAttribute('onclick') || '';
+        var match = onclick.match(/room-detail\.html\?id=(\d+)/);
         var roomId = match ? match[1] : null;
 
-        // hành vi: Chi tiết -> mở trang chi tiết; Đặt Ngay -> mở chi tiết/đặt phòng
+        // Button behaviors
         btnDetail.addEventListener('click', function(e) {
             e.stopPropagation();
             if (roomId) window.location.href = 'room-detail.html?id=' + roomId;
-            else card.click();
-        });
-        btnBook.addEventListener('click', function(e) {
-            e.stopPropagation();
-            // Bạn có thể chuyển tới trang booking chi tiết hoặc chuyển tới chi tiết + tham số đặt
-            if (roomId) {
-                // VD: chuyển tới chi tiết, có thể tự đưa đến trang thanh toán
-                window.location.href = 'room-detail.html?id=' + roomId + '&action=book';
-            } else {
+            else {
+                // fallback: click card
                 card.click();
             }
         });
-
-        // tránh hành vi click card dẫn tới double click khi bấm vào nút
-        btnDetail.addEventListener('mousedown', function(e){ e.stopPropagation(); });
-        btnBook.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+        btnBook.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (roomId) window.location.href = 'room-detail.html?id=' + roomId + '&action=book';
+            else card.click();
+        });
     }
 
-    // Observer: quan sát container để xử lý khi JS render các card
-    function initObserver() {
+    function observeResults() {
         var container = document.getElementById('searchResultsContainer') || document.querySelector('.danh-sach-ket-qua');
         if (!container) return;
 
-        var mo = new MutationObserver(function(muts) {
-            var cards = container.querySelectorAll('.the-phong');
-            cards.forEach(processCard);
-        });
+        // process existing cards
+        var cards = container.querySelectorAll('.the-phong');
+        cards.forEach(enhanceCard);
 
+        // observe new cards
+        var mo = new MutationObserver(function(muts) {
+            muts.forEach(function(m) {
+                if (m.addedNodes && m.addedNodes.length) {
+                    m.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1 && node.classList.contains('the-phong')) {
+                            enhanceCard(node);
+                        } else {
+                            var found = node.querySelectorAll ? node.querySelectorAll('.the-phong') : [];
+                            Array.prototype.forEach.call(found, enhanceCard);
+                        }
+                    });
+                }
+            });
+        });
         mo.observe(container, { childList: true, subtree: true });
 
-        // chạy 1 lần cho các card đã có
-        setTimeout(function() {
-            var cards = container.querySelectorAll('.the-phong');
-            cards.forEach(processCard);
-            // bỏ observer sau 6s để tránh leak (nếu muốn có thể để lâu hơn)
-            setTimeout(function(){ mo.disconnect(); }, 6000);
-        }, 300);
+        // keep observer for a while (or you can leave it connected)
+        setTimeout(function(){ mo.disconnect(); }, 15000);
     }
 
-    // Khởi tạo khi DOM sẵn sàng
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initObserver);
+        document.addEventListener('DOMContentLoaded', observeResults);
     } else {
-        initObserver();
+        observeResults();
     }
 })();
 
