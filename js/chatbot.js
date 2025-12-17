@@ -1,7 +1,7 @@
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = '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';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 // Cập nhật model sang Amazon Nova Lite theo yêu cầu
-const MODEL = 'amazon/nova-lite-v1';
+const MODEL = 'google/gemma-3-4b-it:free';
 
 let chatHistory = [];
 let isOpen = false;
@@ -186,17 +186,21 @@ Vui lòng hướng dẫn khách xem thông tin chi tiết trên website hoặc l
 }
 
 function initChatbot() {
+    // ✅ Guard: tránh bind event 2 lần (khi chatbot.js bị load/DOM init 2 lần)
+    if (window.__quickstayChatbotInited) return;
+    window.__quickstayChatbotInited = true;
+
     const button = document.getElementById('chatbotButton');
-    const window = document.getElementById('chatbotWindow');
+    const windowEl = document.getElementById('chatbotWindow');
     const closeBtn = document.getElementById('chatbotClose');
     const sendBtn = document.getElementById('chatbotSend');
     const input = document.getElementById('chatbotInput');
 
-    if (!button || !window) return;
+    if (!button || !windowEl) return;
 
     button.addEventListener('click', () => {
         isOpen = !isOpen;
-        window.classList.toggle('active', isOpen);
+        windowEl.classList.toggle('active', isOpen);
         if (isOpen) {
             input.focus();
             if (chatHistory.length === 0) {
@@ -207,7 +211,7 @@ function initChatbot() {
 
     closeBtn.addEventListener('click', () => {
         isOpen = false;
-        window.classList.remove('active');
+        windowEl.classList.remove('active');
     });
 
     sendBtn.addEventListener('click', sendMessage);
