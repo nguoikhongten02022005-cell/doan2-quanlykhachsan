@@ -180,7 +180,7 @@
     margin: 0 auto;
     padding: 0 20px;
     position: relative;
-    z-index: 100;
+    z-index: 1; /* Thấp hơn popup */
 }
 
 .form-tim-kiem-chinh {
@@ -193,6 +193,7 @@
     overflow: visible;
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1; /* Thấp hơn popup */
 }
 
 .truong-ngay-thang, .truong-khach-phong {
@@ -1333,76 +1334,95 @@
 ========================================================== */
 html, body { overflow-x: hidden; }
 
-/* ========== POPUP KHÁCH/PHÒNG ========== */
-/* Popup mặc định ẩn, chỉ hiện khi có class .show */
-#hopKhachTim { display: none; z-index: 20000; }
-#hopKhachTim.show { display: block !important; }
 
-/* Desktop/Tablet: dạng dropdown dưới ô khách */
+/* ==== Overlay + khóa scroll (chỉ dùng khi mở popup trên mobile) ==== */
+#nenPopupTimKiem{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:10000;
+}
+#nenPopupTimKiem.hien{ display:block; }
+body.khoa-scroll{ overflow:hidden; }
+
+/* Tránh bị bôi đen text khi bấm (như bạn bị chọn chữ "em") */
+.truong-ngay-thang,
+.truong-khach-phong{
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* ==== LỊCH: Desktop = dropdown ngay dưới ô ngày ==== */
+.truong-ngay-thang{ position: relative; }
+
+.hop-lich-tim{
+  position:absolute;
+  top:calc(100% + 12px);
+  left:50%;
+  transform:translateX(-50%);
+
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+  z-index:10002 !important; /* Cao hơn để không bị đè */
+
+  width:860px;
+  max-width:calc(100vw - 24px);
+  overflow:auto;
+}
+
+/* ==== KHÁCH: Desktop = dropdown ngay dưới ô khách ==== */
+.truong-khach-phong{ position: relative; }
+
 #hopKhachTim{
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  right: auto;
-  transform: none;
-  width: 360px;
-  max-width: calc(100vw - 24px);
-  border-radius: 16px;
-  box-shadow: 0 14px 40px rgba(0,0,0,.18);
+  position:absolute;
+  top:calc(100% + 10px);
+  right:0;
+  left:auto;
+
+  width:min(360px, calc(100vw - 24px));
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,.15);
+  z-index:10001;
 }
 
-/* Mobile: bottom sheet */
-@media (max-width: 600px){
-  #hopKhachTim{
-    position: fixed !important;
-    left: 12px !important;
-    right: 12px !important;
-    bottom: 12px !important;
-    top: auto !important;
-
-    width: auto !important;
-    transform: none !important;
-
-    max-height: calc(100vh - 140px);
-    overflow: auto;
-    border-radius: 18px;
-    box-shadow:
-      0 0 0 9999px rgba(0,0,0,.45),
-      0 18px 60px rgba(0,0,0,.22);
-  }
-}
-
-/* ========== POPUP LỊCH ========== */
-#hopLichTim { display: none; z-index: 20000; }
-#hopLichTim.show { display: block !important; }
-
-/* Desktop: dropdown căn giữa dưới ô ngày */
-#hopLichTim{
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 850px;
-  max-width: calc(100vw - 24px);
-  border-radius: 18px;
-  box-shadow: 0 14px 40px rgba(0,0,0,.18);
-}
-
-/* Mobile: modal (không tràn ngang, có overlay) */
+/* ==== Mobile/Tablet: cả 2 popup = bottom-sheet (không đè header/nút Tìm) ==== */
 @media (max-width: 768px){
-  #hopLichTim{
-    position: fixed !important;
-    top: 12% !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+  .hop-lich-tim{
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:12px;
+    top:auto;
 
-    width: calc(100% - 20px) !important;
-    max-height: 80vh;
-    overflow: auto;
+    width:auto;
+    max-width:720px;
+    margin:0 auto;
 
-    border-radius: 18px;
-    box-shadow:
-      0 0 0 9999px rgba(0,0,0,.45),
-      0 18px 60px rgba(0,0,0,.22);
+    transform:none;
+    padding:16px;
+    border-radius:16px;
+    max-height:80vh;
+    overflow:auto;
+    z-index:10001;
+  }
+
+  #hopKhachTim{
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:12px;
+    top:auto;
+
+    width:auto;
+    max-width:560px;
+    margin:0 auto;
+
+    transform:none;
+    border-radius:16px;
+    z-index:10001;
   }
 }

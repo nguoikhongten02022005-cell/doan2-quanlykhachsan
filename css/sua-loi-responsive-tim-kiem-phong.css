@@ -233,16 +233,13 @@ html, body { overflow-x: hidden; }
 
 /* (Tuỳ chọn) POPUP khách/phòng dạng "bottom sheet" trên mobile */
 @media (max-width: 600px) {
-  #hopKhachTim {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    top: auto;
-    width: auto;
-    max-height: calc(100vh - 140px);
-    overflow: auto;
-    z-index: 10000;
+  #hopKhachTim{
+    left:12px;
+    right:12px;
+    bottom:12px;
+    width:auto;
+    border-radius:16px;
+    z-index:10001;
   }
 }
 

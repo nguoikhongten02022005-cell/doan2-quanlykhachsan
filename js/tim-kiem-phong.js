@@ -5,6 +5,42 @@ var thang2Tim = new Date(bayGioTim.getFullYear(), bayGioTim.getMonth() + 1, 1);
 var nhanPhongTim = null;
 var traPhongTim = null;
 
+/* ===== Popup overlay + scroll lock (trang tìm kiếm) ===== */
+function _isMobileSearchUI() {
+  return window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+}
+
+function _getNenPopupTimKiem() {
+  var nen = document.getElementById('nenPopupTimKiem');
+  if (!nen) {
+    nen = document.createElement('div');
+    nen.id = 'nenPopupTimKiem';
+    document.body.appendChild(nen);
+  }
+  return nen;
+}
+
+function _hienNenPopupTimKiem() {
+  if (!_isMobileSearchUI()) return;
+  var nen = _getNenPopupTimKiem();
+  nen.classList.add('hien');
+  document.body.classList.add('khoa-scroll');
+}
+
+function _anNenPopupTimKiem() {
+  var nen = document.getElementById('nenPopupTimKiem');
+  if (nen) nen.classList.remove('hien');
+  document.body.classList.remove('khoa-scroll');
+}
+
+function _dongTatCaPopupTimKiem() {
+  var lich = document.getElementById('hopLichTim');
+  var khach = document.getElementById('hopKhachTim');
+  if (lich) lich.style.display = 'none';
+  if (khach) khach.style.display = 'none';
+  _anNenPopupTimKiem();
+}
+
 // Parse YYYY-MM-DD into local Date (avoid timezone issues)
 function parseDateYYYYMMDD(s) {
     if (!s) return null;
@@ -97,6 +133,36 @@ document.addEventListener('DOMContentLoaded', function() {
     loadSearchDataFromURL();
 });
 
+// Document click chung: đóng popup khi click ra ngoài
+document.addEventListener('click', function(e) {
+  var truongNgay = document.querySelector('.truong-ngay-thang');
+  var truongKhach = document.getElementById('truongKhachTim');
+  var hopLich = document.getElementById('hopLichTim');
+  var hopKhach = document.getElementById('hopKhachTim');
+  var nen = document.getElementById('nenPopupTimKiem');
+
+  // Click vào overlay -> đóng
+  if (nen && e.target === nen) {
+    _dongTatCaPopupTimKiem();
+    return;
+  }
+
+  // Click trong vùng popup/field -> không đóng
+  if ((truongNgay && truongNgay.contains(e.target)) ||
+      (truongKhach && truongKhach.contains(e.target)) ||
+      (hopLich && hopLich.contains(e.target)) ||
+      (hopKhach && hopKhach.contains(e.target))) {
+    return;
+  }
+
+  _dongTatCaPopupTimKiem();
+});
+
+// Đổi xoay/resize: đóng để tránh lệch vị trí
+window.addEventListener('resize', function(){
+  _dongTatCaPopupTimKiem();
+});
+
 
 
 function khoiTaoDatePickerTimKiem() {
@@ -139,24 +205,15 @@ function khoiTaoDatePickerTimKiem() {
     truongNgay.addEventListener('click', function(e) {
         e.stopPropagation();
         var popup = document.getElementById('hopLichTim');
-        var khachPopup = document.getElementById('hopKhachTim');
-        
-        if (khachPopup) khachPopup.classList.remove('show');
-        
-        if (popup) {
-            if (popup.classList.contains('show')) {
-                popup.classList.remove('show');
-            } else {
-                popup.classList.add('show');
-                taoHaiLichTim();
-            }
-        }
-    });
-    
-    document.addEventListener('click', function(e) {
-        var popup = document.getElementById('hopLichTim');
-        if (popup && !truongNgay.contains(e.target)) {
-            popup.classList.remove('show');
+        if (!popup) return;
+
+        var seMo = (popup.style.display !== 'block');
+        _dongTatCaPopupTimKiem();
+
+        if (seMo) {
+            popup.style.display = 'block';
+            taoHaiLichTim();
+            _hienNenPopupTimKiem();
         }
     });
     
@@ -308,7 +365,7 @@ function chonNgayTim(date) {
     // Đóng popup lịch
     var popup = document.getElementById('hopLichTim');
     if (popup && nhanPhongTim && traPhongTim) {
-        popup.classList.remove('show');
+        _dongTatCaPopupTimKiem();
     }
     
     // Cập nhật lại lịch
@@ -661,28 +718,27 @@ function khoiTaoChonKhachTimKiem() {
     
     if (!field || !popup) return;
     
-    const moPopup = () => popup.classList.add('show');
-    const dongPopup = () => popup.classList.remove('show');
-    const dangMo = () => popup.classList.contains('show');
-    
     field.addEventListener('click', function(e) {
         e.stopPropagation();
-        var datePopup = document.getElementById('hopLichTim');
-        if (datePopup) datePopup.classList.remove('show');
-        dangMo() ? dongPopup() : moPopup();
+        var popup = document.getElementById('hopKhachTim');
+        if (!popup) return;
+
+        var seMo = (popup.style.display !== 'block');
+        _dongTatCaPopupTimKiem();
+
+        if (seMo) {
+            popup.style.display = 'block';
+            _hienNenPopupTimKiem();
+        }
     });
     
     var doneBtn = document.getElementById('nutXongKhachTim');
     if (doneBtn) {
         doneBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            dongPopup();
+            _dongTatCaPopupTimKiem();
         });
     }
-    
-    document.addEventListener('click', function(e) {
-        if (!field.contains(e.target)) dongPopup();
-    });
     
     popup.addEventListener('click', function(e) {
         e.stopPropagation();
