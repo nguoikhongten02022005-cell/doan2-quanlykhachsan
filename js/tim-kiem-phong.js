@@ -5,6 +5,25 @@ var thang2Tim = new Date(bayGioTim.getFullYear(), bayGioTim.getMonth() + 1, 1);
 var nhanPhongTim = null;
 var traPhongTim = null;
 
+// Parse YYYY-MM-DD into local Date (avoid timezone issues)
+function parseDateYYYYMMDD(s) {
+    if (!s) return null;
+    var parts = s.split('-').map(Number);
+    if (parts.length !== 3) return null;
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+// Simple HTML escape for inserted text to reduce XSS risk
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
     khoiTaoMenuDiDong();
@@ -173,11 +192,15 @@ function taoLichTim(calendarId, monthDate, titleId) {
                     e.stopPropagation();
                     chonNgayTim(new Date(date));
                 });
-                
+
                 dayElement.addEventListener('mouseenter', function() {
                     if (cellDate >= today) {
-                        this.style.background = this.style.background || '#f5f5f5';
+                        this.classList.add('hover');
                     }
+                });
+
+                dayElement.addEventListener('mouseleave', function() {
+                    this.classList.remove('hover');
                 });
             })(cellDate);
         }
@@ -264,13 +287,11 @@ function performSearch(checkin, checkout, adults, children) {
             }
         }
 
-        if (adults > cap.adults) return false;
-
-        if (children > cap.children) {
-             const totalCapacity = cap.adults + cap.children;
-             const totalGuests = adults + children;
-             if (totalGuests > totalCapacity) return false;
-        }
+           // Strict capacity checks: each category must fit, and total must not exceed combined capacity
+           if (adults > cap.adults) return false;
+           if (children > cap.children) return false;
+           const totalCapacity = cap.adults + cap.children;
+           if ((adults + children) > totalCapacity) return false;
 
         const isBooked = bookings.some(booking => {
             if (String(booking.roomId) !== String(room.id) || booking.status === 'cancelled') {
@@ -308,11 +329,11 @@ function displayResults(rooms) {
         return;
     }
 
-    let html = '';
+    // Build results via DOM to avoid XSS and set numeric data-price for sorting
+    container.innerHTML = '';
     rooms.forEach(room => {
- 
-        const price = formatPrice(room.price);
-        
+        const priceVal = Number(room.price) || 0;
+
         let cap = { adults: 2, children: 0 };
         if (typeof parseCapacity === 'function') {
             cap = parseCapacity(room);
@@ -324,56 +345,74 @@ function displayResults(rooms) {
                 if (matchChildren) cap.children = parseInt(matchChildren[1]);
             }
         }
-        
-        let amenitiesHtml = '';
-        if (room.amenities) {
-            const amenitiesArray = room.amenities.split(',').map(a => a.trim());
-            const list = amenitiesArray.slice(0, 5);
-            list.forEach(amenity => {
-                let icon = 'fas fa-check';
-                const amenityLower = amenity.toLowerCase();
-                if (amenityLower.indexOf('wifi') !== -1) icon = 'fas fa-wifi';
-                else if (amenityLower.indexOf('tv') !== -1) icon = 'fas fa-tv';
-                else if (amenityLower.indexOf('minibar') !== -1 || amenityLower.indexOf('mini bar') !== -1) icon = 'fas fa-glass-martini';
-                else if (amenityLower.indexOf('điều hòa') !== -1) icon = 'fas fa-snowflake';
-                else if (amenityLower.indexOf('bàn làm việc') !== -1) icon = 'fas fa-laptop';
-                else if (amenityLower.indexOf('ban công') !== -1) icon = 'fas fa-door-open';
-                else if (amenityLower.indexOf('phòng tắm') !== -1 || amenityLower.indexOf('bồn tắm') !== -1) icon = 'fas fa-bath';
-                
-                amenitiesHtml += `<span class="tien-ich"><i class="${icon}"></i> ${amenity}</span>`;
-            });
-        }
 
-        html += `
-            <div class="the-phong-tim-kiem" onclick="window.location.href='room-detail.html?id=${room.id}'">
-                <div class="noi-dung-the-phong">
-                    <div class="anh-phong-tim-kiem">
-                        <img src="${room.image}" alt="${room.name}" onerror="this.src='../img/khachsan1(1).jpg'">
-                        <span class="badge-giam-gia">Ưu đãi</span>
-                    </div>
-                    <div class="thong-tin-phong-tim-kiem">
-                        <div>
-                            <h3 class="ten-phong-tim-kiem">${room.name}</h3>
-                            <p class="suc-chua-phong">${cap.adults} người lớn, ${cap.children} trẻ em</p>
-                        </div>
-                        
-                        <div class="tien-ich-phong-tim-kiem">
-                            ${amenitiesHtml}
-                        </div>
-                        
-                        <div>
-                            <div class="gia-phong-tim-kiem">${price}</div>
-                            <div class="nut-hanh-dong">
-                                <button class="nut-chi-tiet">Xem chi tiết</button>
-                                <button class="nut-dat-ngay">Đặt ngay</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        const amenitiesArray = room.amenities ? room.amenities.split(',').map(a => a.trim()).slice(0,5) : [];
+
+        const outer = document.createElement('div');
+        outer.className = 'the-phong-tim-kiem';
+        outer.dataset.id = String(room.id);
+        outer.dataset.price = String(priceVal);
+        outer.addEventListener('click', function() { window.location.href = 'room-detail.html?id=' + encodeURIComponent(room.id); });
+
+        const noiDung = document.createElement('div');
+        noiDung.className = 'noi-dung-the-phong';
+
+        const anhWrap = document.createElement('div');
+        anhWrap.className = 'anh-phong-tim-kiem';
+        const img = document.createElement('img');
+        img.src = room.image || '';
+        img.alt = room.name || '';
+        img.onerror = function() { this.src = '../img/khachsan1(1).jpg'; };
+        anhWrap.appendChild(img);
+        const badge = document.createElement('span');
+        badge.className = 'badge-giam-gia';
+        badge.textContent = 'Ưu đãi';
+        anhWrap.appendChild(badge);
+
+        const thongTin = document.createElement('div');
+        thongTin.className = 'thong-tin-phong-tim-kiem';
+
+        const left = document.createElement('div');
+        const h3 = document.createElement('h3'); h3.className = 'ten-phong-tim-kiem'; h3.textContent = room.name || '';
+        const pCap = document.createElement('p'); pCap.className = 'suc-chua-phong'; pCap.textContent = cap.adults + ' người lớn, ' + cap.children + ' trẻ em';
+        left.appendChild(h3); left.appendChild(pCap);
+
+        const tienIchDiv = document.createElement('div'); tienIchDiv.className = 'tien-ich-phong-tim-kiem';
+        amenitiesArray.forEach(amenity => {
+            const span = document.createElement('span'); span.className = 'tien-ich';
+            const i = document.createElement('i');
+            const aLower = amenity.toLowerCase();
+            let icon = 'fas fa-check';
+            if (aLower.indexOf('wifi') !== -1) icon = 'fas fa-wifi';
+            else if (aLower.indexOf('tv') !== -1) icon = 'fas fa-tv';
+            else if (aLower.indexOf('minibar') !== -1 || aLower.indexOf('mini bar') !== -1) icon = 'fas fa-glass-martini';
+            else if (aLower.indexOf('điều hòa') !== -1) icon = 'fas fa-snowflake';
+            else if (aLower.indexOf('bàn làm việc') !== -1) icon = 'fas fa-laptop';
+            else if (aLower.indexOf('ban công') !== -1) icon = 'fas fa-door-open';
+            else if (aLower.indexOf('phòng tắm') !== -1 || aLower.indexOf('bồn tắm') !== -1) icon = 'fas fa-bath';
+            i.className = icon; span.appendChild(i); span.appendChild(document.createTextNode(' ' + amenity));
+            tienIchDiv.appendChild(span);
+        });
+
+        const right = document.createElement('div');
+        const priceDiv = document.createElement('div'); priceDiv.className = 'gia-phong-tim-kiem'; priceDiv.textContent = formatPrice(priceVal);
+        const actions = document.createElement('div'); actions.className = 'nut-hanh-dong';
+        const btnDetail = document.createElement('button'); btnDetail.className = 'nut-chi-tiet'; btnDetail.textContent = 'Xem chi tiết';
+        const btnBook = document.createElement('button'); btnBook.className = 'nut-dat-ngay'; btnBook.textContent = 'Đặt ngay';
+        actions.appendChild(btnDetail); actions.appendChild(btnBook);
+
+        right.appendChild(priceDiv); right.appendChild(actions);
+
+        thongTin.appendChild(left);
+        thongTin.appendChild(tienIchDiv);
+        thongTin.appendChild(right);
+
+        noiDung.appendChild(anhWrap);
+        noiDung.appendChild(thongTin);
+        outer.appendChild(noiDung);
+
+        container.appendChild(outer);
     });
-    container.innerHTML = html;
 }
 
 // Hàm đọc tham số từ URL và thực hiện tìm kiếm tự động
@@ -390,12 +429,12 @@ function loadSearchDataFromURL() {
 
     // 2. Nếu có ngày checkin/checkout thì thực hiện tìm kiếm
     if (checkinStr && checkoutStr) {
-        const cin = new Date(checkinStr);
-        const cout = new Date(checkoutStr);
+        const cin = parseDateYYYYMMDD(checkinStr);
+        const cout = parseDateYYYYMMDD(checkoutStr);
         
-        // Reset giờ về 0 để so sánh chính xác
-        cin.setHours(0, 0, 0, 0);
-        cout.setHours(0, 0, 0, 0);
+        // Reset giờ về 0 để so sánh chính xác (parseDate already creates local date)
+        if (cin) cin.setHours(0, 0, 0, 0);
+        if (cout) cout.setHours(0, 0, 0, 0);
 
         // Cập nhật biến toàn cục để lịch hiển thị đúng
         nhanPhongTim = cin;
@@ -551,8 +590,7 @@ function khoiTaoSapXep() {
         var sortedRooms = rooms.map(function(room) {
             return {
                 element: room,
-                price: parseFloat(room.querySelector('.gia-phong-tim-kiem') ? 
-                    room.querySelector('.gia-phong-tim-kiem').textContent.replace(/\D/g, '') : 0)
+                price: parseFloat(room.dataset.price || (room.querySelector('.gia-phong-tim-kiem') ? room.querySelector('.gia-phong-tim-kiem').textContent.replace(/\D/g, '') : 0))
             };
         });
         

@@ -620,6 +620,10 @@
     background: #ebf3ff;
 }
 
+.o-lich-tim.hover {
+    background: #ebf3ff;
+}
+
 @media (max-width: 768px) {
     .hop-lich-tim {
         width: calc(100% - 20px) !important;
