@@ -520,17 +520,14 @@ function khoiTaoMaGiamGia() {
 function apDungMaGiamGia() {
     var input = document.getElementById('inputMaGiamGia');
     var maGiamGia = input.value.trim().toUpperCase();
-    var thongBao = document.getElementById('thongBaoMaGiamGia');
-    
+
     if (!maGiamGia) {
         hienThiThongBaoMa('Vui lòng nhập mã giảm giá', 'warning');
         return;
     }
-    
-    // Lấy danh sách mã giảm giá từ localStorage
+
     var promotions = JSON.parse(localStorage.getItem('promotions') || '[]');
-    
-    // Tìm mã giảm giá
+
     var promotion = null;
     for (var i = 0; i < promotions.length; i++) {
         if (promotions[i].code && promotions[i].code.toUpperCase() === maGiamGia) {
@@ -538,86 +535,43 @@ function apDungMaGiamGia() {
             break;
         }
     }
-    
+
     if (!promotion) {
         hienThiThongBaoMa('Mã giảm giá không tồn tại', 'error');
         return;
     }
-    
-    // Kiểm tra thời hạn
-    var today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    var startDate = new Date(promotion.startDate || promotion.ngayBatDau);
-    var endDate = new Date(promotion.endDate || promotion.ngayKetThuc);
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(23, 59, 59, 999);
-    
-    if (today < startDate) {
-        hienThiThongBaoMa('⏳ Mã chưa có hiệu lực', 'warning');
-        return;
-    }
-    
-    if (today > endDate) {
-        hienThiThongBaoMa('⏰ Mã đã hết hạn', 'error');
-        return;
-    }
-    
-    // Kiểm tra số lượng
-    var usedCount = parseInt(promotion.usedCount || promotion.soLuongDaSuDung || 0);
-    var maxUses = parseInt(promotion.maxUses || promotion.soLuong || 999);
-    
-    if (usedCount >= maxUses) {
-        hienThiThongBaoMa('📦 Mã đã hết lượt sử dụng', 'error');
-        return;
-    }
-    
+
     // Lấy tổng tiền sau phí và thuế
     var phiDichVu = Math.round(tongTienGoc * 0.05);
     var thueVAT = Math.round(tongTienGoc * 0.1);
     var tongTienSauPhi = tongTienGoc + phiDichVu + thueVAT;
-    
-    // Kiểm tra điều kiện tối thiểu
-    var minAmount = parseInt(promotion.minAmount || promotion.giaTriToiThieu || 0);
-    if (tongTienSauPhi < minAmount) {
-        hienThiThongBaoMa('Đơn hàng chưa đạt giá trị tối thiểu ' + formatPrice(minAmount), 'warning');
-        return;
-    }
-    
-    // Áp dụng mã giảm giá
+
+    // ✅ BỎ TOÀN BỘ ĐIỀU KIỆN (ngày, lượt dùng, tối thiểu...)
     maGiamGiaDangApDung = promotion;
-    
-    // KHÔNG trừ lượt mã ngay khi nhập - chỉ trừ khi thanh toán thành công (trong luuThongTinDatPhong)
-    // (Đã comment: cập nhật số lượng đã sử dụng trong localStorage)
-    // for (var j = 0; j < promotions.length; j++) {
-    //     if (promotions[j].id === promotion.id) {
-    //         promotions[j].usedCount = (parseInt(promotions[j].usedCount) || 0) + 1;
-    //         promotions[j].maxUses = Math.max(0, (parseInt(promotions[j].maxUses) || 0) - 1);
-    //         break;
-    //     }
-    // }
-    // localStorage.setItem('promotions', JSON.stringify(promotions));
-    
+
     // Tính tiền giảm
     var tienGiam = tinhTienGiamGia(tongTienSauPhi, promotion);
-    
-    // Cập nhật UI
+
+    // Cập nhật UI tổng tiền
     capNhatTongTien(tongTienGoc);
-    
-    // Hiển thị thông báo thành công
-    var discountText = promotion.discountType === 'percent' 
-        ? promotion.discountValue + '%' 
-        : formatPrice(promotion.discountValue);
-    
+
+    // Thông báo
+    var discountText = (promotion.discountType === 'percent' || promotion.loaiGiam === 'phan_tram')
+        ? (promotion.discountValue || promotion.giaTriGiam) + '%'
+        : formatPrice(promotion.discountValue || promotion.giaTriGiam);
+
     hienThiThongBaoMa(
-        'Áp dụng thành công! Giảm ' + discountText + ' = ' + formatPrice(tienGiam), 
+        'Áp dụng thành công! Giảm ' + discountText + ' = ' + formatPrice(tienGiam),
         'success'
     );
-    
-    // Disable input và nút
+
+    // Disable input và nút (giữ nguyên nếu bạn muốn khóa lại sau khi áp)
     input.disabled = true;
-    document.getElementById('nutApDungMa').disabled = true;
-    document.getElementById('nutApDungMa').style.opacity = '0.5';
+    var btn = document.getElementById('nutApDungMa');
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    }
 }
 
 function tinhTienGiamGia(tongTien, promotion) {
@@ -684,13 +638,7 @@ function hienThiThongBaoMa(message, type) {
     }
 
     function isPromoActive(p) {
-        var now = new Date();
-        if (p.startDate && new Date(p.startDate) > now) return false;
-        if (p.endDate && new Date(p.endDate) < now) return false;
-        var max = Number(p.maxUses || p.soluong || 0);
-        var used = Number(p.usedCount || 0);
-        if (max > 0 && used >= max) return false;
-        return true;
+        return true; // ✅ tất cả mã luôn dùng được
     }
 
     function renderPromos() {

@@ -436,15 +436,15 @@ function khoiTaoDuLieuHeThong() {
         var samplePromotions = [
             {
                 id: 1, code: 'SUMMER2025', discountType: 'percent', discountValue: 20,
-                maxDiscount: 2000000, minAmount: 1000000,
+                maxDiscount: 2000000, minAmount: 0,
                 startDate: today.toISOString().split('T')[0], endDate: nextYear.toISOString().split('T')[0],
-                maxUses: 100, usedCount: 0, description: 'Giảm 20% cho đơn hàng từ 1 triệu'
+                maxUses: 100, usedCount: 0, description: 'Giảm 20% cho mọi đơn hàng'
             },
             {
                 id: 2, code: 'FLASHSALE15', discountType: 'percent', discountValue: 15,
-                maxDiscount: 1500000, minAmount: 500000,
+                maxDiscount: 1500000, minAmount: 0,
                 startDate: today.toISOString().split('T')[0], endDate: nextMonth.toISOString().split('T')[0],
-                maxUses: 200, usedCount: 0, description: 'Flash Sale - Giảm 15% cho đơn từ 500k'
+                maxUses: 200, usedCount: 0, description: 'Flash Sale - Giảm 15% cho mọi đơn hàng'
             }
         ];
         localStorage.setItem('promotions', JSON.stringify(samplePromotions));
