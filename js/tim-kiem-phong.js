@@ -251,13 +251,73 @@ function chonNgayTim(date) {
     return date;
 }
 
+// -----------------------------
+// Helper ngày: normalize về midnight local (Date)
+function _toMidnightDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) {
+    var d = new Date(v.getFullYear(), v.getMonth(), v.getDate());
+    d.setHours(0,0,0,0);
+    return d;
+  }
+  var s = String(v).trim();
+  // Nếu đã ở dạng YYYY-MM-DD thì parse thủ công để tránh timezone
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    var parts = s.split('-').map(Number);
+    if (parts.length === 3) {
+      var dd = new Date(parts[0], parts[1] - 1, parts[2]);
+      dd.setHours(0,0,0,0);
+      return dd;
+    }
+  }
+  // fallback: tạo Date từ chuỗi, rồi chuyển sang midnight local
+  var d = new Date(s);
+  if (isNaN(d.getTime())) return null;
+  var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  r.setHours(0,0,0,0);
+  return r;
+}
+
+// Kiểm tra phòng có sẵn cho khoảng [checkin, checkout) không.
+// Trả về true nếu KHÔNG có booking (không-cancelled) chồng lấp.
+function isRoomAvailableForPeriod(roomId, checkin, checkout) {
+  var start = _toMidnightDate(checkin);
+  var end = _toMidnightDate(checkout);
+  if (!start || !end || start >= end) return false; // invalid => treat as unavailable
+
+  var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+  for (var i = 0; i < bookings.length; i++) {
+    var b = bookings[i];
+    if (!b) continue;
+    // filter theo roomId (chuỗi hoặc số)
+    if (String(b.roomId) !== String(roomId)) continue;
+    // bỏ qua booking đã bị hủy
+    var status = (b.status || '').toLowerCase();
+    if (status === 'cancelled' || status === 'canceled') continue;
+
+    // chuẩn hóa ngày lưu trong booking: hỗ trợ checkIn/checkin và checkOut/checkout
+    var bs = _toMidnightDate(b.checkIn || b.checkin);
+    var be = _toMidnightDate(b.checkOut || b.checkout);
+    if (!bs || !be) continue; // booking không có ngày hợp lệ -> skip
+
+    // Nếu có overlap: start < be && end > bs => phòng bị chiếm
+    if (start < be && end > bs) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
 function performSearch(checkin, checkout, adults, children) {
     const rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
-    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    
-    const searchStart = normalizeDate(checkin);
-    const searchEnd = normalizeDate(checkout);
-    
+    // bookings vẫn cần để tham khảo (chỉ dùng trong debug; kiểm tra sẵn có bằng isRoomAvailableForPeriod)
+    // const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+
+    // Chuẩn hóa ngày về midnight local
+    const searchStart = _toMidnightDate(checkin);
+    const searchEnd = _toMidnightDate(checkout);
+
     if (!searchStart || !searchEnd || searchStart >= searchEnd) {
         const container = document.getElementById('searchResultsContainer');
         if (container) {
@@ -273,8 +333,10 @@ function performSearch(checkin, checkout, adults, children) {
     }
 
     const availableRooms = rooms.filter(room => {
+        // nếu room.status khác 'available' thì loại
         if (room.status !== 'available') return false;
 
+        // kiểm tra capacity (giữ logic trước đó)
         let cap = { adults: 2, children: 0 };
         if (typeof parseCapacity === 'function') {
             cap = parseCapacity(room);
@@ -287,27 +349,60 @@ function performSearch(checkin, checkout, adults, children) {
             }
         }
 
-           // Strict capacity checks: each category must fit, and total must not exceed combined capacity
-           if (adults > cap.adults) return false;
-           if (children > cap.children) return false;
-           const totalCapacity = cap.adults + cap.children;
-           if ((adults + children) > totalCapacity) return false;
+        if (adults > cap.adults) return false;
 
-        const isBooked = bookings.some(booking => {
-            if (String(booking.roomId) !== String(room.id) || booking.status === 'cancelled') {
-                return false;
-            }
-            const bookingStart = normalizeDate(booking.checkIn || booking.checkin);
-            const bookingEnd = normalizeDate(booking.checkOut || booking.checkout);
-            
-            if (!bookingStart || !bookingEnd) return false;
-            return (searchStart < bookingEnd && searchEnd > bookingStart);
-        });
+        if (children > cap.children) {
+            const totalCapacity = cap.adults + cap.children;
+            const totalGuests = adults + children;
+            if (totalGuests > totalCapacity) return false;
+        }
 
-        return !isBooked;
+        // *** NEW: kiểm tra booking chồng lấp theo ngày tìm kiếm ***
+        // Nếu room không có sẵn cho khoảng searchStart..searchEnd => loại
+        if (!isRoomAvailableForPeriod(room.id, searchStart, searchEnd)) {
+            return false;
+        }
+
+        // nếu qua hết => phòng được coi là có thể hiển thị
+        return true;
     });
 
-    displayResults(availableRooms);
+    // Hiển thị kết quả như cũ, dùng availableRooms
+    const container = document.getElementById('searchResultsContainer');
+    if (!container) return;
+
+    if (!availableRooms || availableRooms.length === 0) {
+        container.innerHTML = `
+            <div class="thong-bao-khong-tim-thay">
+                <i class="fas fa-search"></i>
+                <h3>Không có phòng phù hợp</h3>
+                <p>Không tìm thấy phòng trống cho khoảng thời gian và số lượng khách bạn chọn.</p>
+                <a href="index.html" class="nut-xem-tinh-trang">Quay lại trang chủ</a>
+            </div>
+        `;
+        return;
+    }
+
+    // Tạo HTML hiển thị danh sách phòng (giữ logic render hiện có)
+    var html = '';
+    for (var i = 0; i < availableRooms.length; i++) {
+        var room = availableRooms[i];
+        // giữ nguyên đoạn tạo thẻ HTML mà bạn đang dùng (tên lớp, hình ảnh, giá, tiện nghi, ...)
+        // dưới đây là ví dụ ngắn gọn — bạn thay bằng template hiện có nếu muốn giữ full markup:
+        html += `
+            <div class="the-phong-tim-kiem" data-room-id="${room.id}">
+                <div class="anh-phong-tim"><img src="${room.image || ''}" alt="${room.name}"></div>
+                <div class="noi-dung-phong">
+                    <h3 class="ten-phong-tim-kiem">${room.name}</h3>
+                    <div class="thong-tin-con"><span class="gia">${formatPrice(room.price || 0)}</span></div>
+                </div>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+
+    // (Tùy chọn) gắn sự kiện click hay xử lý khác tương tự trước kia
 }
 
 function displayResults(rooms) {

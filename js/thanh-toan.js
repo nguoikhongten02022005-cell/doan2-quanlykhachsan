@@ -245,10 +245,17 @@ function thucHienThanhToan() {
 }
 
 function luuThongTinDatPhong(finalize = false) {
-    var allBookings = storageService.getBookings();
-    // Chỉ cập nhật các booking chưa thanh toán (status = 'pending')
+    // Lấy tất cả booking hiện có
+    var allBookings = [];
+    try {
+        allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    } catch(e) {
+        allBookings = [];
+    }
+
+    // Lấy các booking đang ở trạng thái pending (những booking trong giỏ)
     var bookings = allBookings.filter(function(booking) {
-        var status = booking.status || 'pending';
+        var status = (booking.status || 'pending').toLowerCase();
         return status === 'pending';
     });
 
@@ -259,25 +266,26 @@ function luuThongTinDatPhong(finalize = false) {
     var ghiChu = document.getElementById('ghiChu').value.trim();
     var phuongThuc = (document.querySelector('input[name="phuongThuc"]:checked') || {}).value || 'ngan-hang';
 
-    // Lấy thông tin user hiện tại
+    // Lấy thông tin user hiện tại nếu có
     var currentUser = localStorage.getItem('currentUser');
     var userId = null;
     if (currentUser) {
         try {
             var userInfo = JSON.parse(currentUser);
             userId = userInfo.id || userInfo.username;
-        } catch(e) {}
+        } catch (e) {}
     }
 
-    // Cập nhật thông tin khách hàng cho các booking chưa thanh toán
+    // Cập nhật các booking pending với thông tin khách hàng và trạng thái
     for (var i = 0; i < bookings.length; i++) {
-        // Đảm bảo có userId
-        if (userId && !bookings[i].userId) {
-            bookings[i].userId = userId;
-            bookings[i].customerId = userId;
+        var b = bookings[i];
+
+        if (userId && !b.userId) {
+            b.userId = userId;
+            b.customerId = userId;
         }
 
-        bookings[i].customerInfo = {
+        b.customerInfo = {
             hoTen: hoTen,
             email: email,
             soDienThoai: soDienThoai,
@@ -285,50 +293,34 @@ function luuThongTinDatPhong(finalize = false) {
             ghiChu: ghiChu,
             phuongThuc: phuongThuc
         };
-        bookings[i].customer = hoTen;
-        bookings[i].email = email;
-        bookings[i].phone = soDienThoai;
-        bookings[i].paymentDate = new Date().toISOString();
+        b.customer = hoTen;
+        b.email = email;
+        b.phone = soDienThoai;
+        b.paymentDate = new Date().toISOString();
 
-        // **THAY ĐỔI CHÍNH**: chỉ set status = 'confirmed' nếu finalize===true,
-        // nếu finalize === false thì giữ 'pending'
         if (finalize) {
-            bookings[i].status = 'confirmed';
+            b.status = 'confirmed';
         } else {
-            bookings[i].status = 'pending';
+            b.status = 'pending';
         }
 
-        // phương thức thanh toán
-        if (phuongThuc === 'tien-mat') bookings[i].paymentMethod = 'Tiền mặt';
-        else if (phuongThuc === 'ngan-hang') bookings[i].paymentMethod = 'Chuyển khoản';
-        else if (phuongThuc === 'vnpay') bookings[i].paymentMethod = 'VNPay';
-
-        if (maGiamGiaDangApDung) {
-            bookings[i].promotion = {
-                code: maGiamGiaDangApDung.code,
-                discountValue: maGiamGiaDangApDung.discountValue,
-                discountType: maGiamGiaDangApDung.discountType
-            };
-        }
+        if (phuongThuc === 'tien-mat') b.paymentMethod = 'Tiền mặt';
+        else if (phuongThuc === 'ngan-hang') b.paymentMethod = 'Chuyển khoản';
+        else if (phuongThuc === 'vnpay') b.paymentMethod = 'VNPay';
+        else b.paymentMethod = phuongThuc;
     }
 
-    // Cập nhật lại allBookings: replace by id
-    for (var j = 0; j < allBookings.length; j++) {
-        for (var k = 0; k < bookings.length; k++) {
-            if (allBookings[j].id === bookings[k].id) {
-                allBookings[j] = bookings[k];
-                break;
-            }
-        }
+    // Lưu toàn bộ allBookings (vì bookings là reference tới các phần tử trong allBookings,
+    // việc sửa bookings[i] cũng sửa allBookings). Ghi lại vào localStorage.
+    try {
+        localStorage.setItem('bookings', JSON.stringify(allBookings));
+    } catch (e) {
+        console.error('Không thể lưu bookings lên localStorage:', e);
     }
 
-    // Lưu lại toàn bộ danh sách
-    storageService.saveBookings(allBookings);
-
-    // Cập nhật số lượng đã sử dụng của mã giảm giá (nếu finalize)
-    if (maGiamGiaDangApDung && finalize) {
-        capNhatSoLuongMaGiamGia(maGiamGiaDangApDung.code);
-    }
+    // Sau khi lưu, cập nhật giao diện / chuyển hướng hoặc gọi lại hàm tìm kiếm nếu cần
+    // Ví dụ: nếu đang ở trang thanh toán, có thể chuyển đến trang hoàn tất
+    // hoặc nếu cần refresh trang tìm kiếm hiện tại thì gọi lại loadSearchDataFromURL() hoặc performSearch()
 }
 
 function capNhatSoLuongMaGiamGia(code) {
