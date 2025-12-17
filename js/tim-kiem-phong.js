@@ -25,27 +25,37 @@ function escapeHtml(str) {
 }
 
 // --- Helper: parse giữ giờ nếu có, hoặc trả về 00:00 local khi chỉ có YYYY-MM-DD ---
-function _toDateTime(v) {
+//  - endOfDay = true: nếu chuỗi chỉ có YYYY-MM-DD -> coi là 23:59:59.999 của ngày đó
+function _toDateTime(v, endOfDay) {
+    if (endOfDay === undefined) endOfDay = false;
     if (!v) return null;
-    if (v instanceof Date) return v;
+    if (v instanceof Date) {
+        var d = new Date(v.getTime());
+        if (endOfDay) d.setHours(23,59,59,999);
+        return d;
+    }
     var s = String(v).trim();
-    // Nếu dạng YYYY-MM-DD -> trả về Date tại 00:00 của ngày đó (local)
+    // Nếu dạng YYYY-MM-DD -> trả về Date ở 00:00 (hoặc 23:59:59.999 nếu endOfDay=true)
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
         var p = s.split('-').map(Number);
         var d = new Date(p[0], p[1] - 1, p[2]);
-        d.setHours(0,0,0,0);
+        if (endOfDay) d.setHours(23,59,59,999);
+        else d.setHours(0,0,0,0);
         return d;
     }
-    // Thử parse chuỗi (ISO hoặc có thời gian)
+    // Nếu chuỗi ISO có thời gian
     var parsed = new Date(s);
-    if (!isNaN(parsed.getTime())) return parsed;
+    if (!isNaN(parsed.getTime())) {
+        if (endOfDay && !/T|:/.test(s)) parsed.setHours(23,59,59,999);
+        return parsed;
+    }
     return null;
 }
 
 // --- Helper: kiểm tra phòng có sẵn cho khoảng [checkin, checkout) không ---
 function isRoomAvailableForPeriod(roomId, checkin, checkout) {
-    var start = _toDateTime(checkin);
-    var end = _toDateTime(checkout);
+    var start = _toDateTime(checkin, false);
+    var end = _toDateTime(checkout, false);
     if (!start || !end || start >= end) return false;
 
     var bookings = [];
@@ -63,8 +73,9 @@ function isRoomAvailableForPeriod(roomId, checkin, checkout) {
         var status = (b.status || '').toLowerCase();
         if (status === 'cancelled' || status === 'canceled') continue;
 
-        var bs = _toDateTime(b.checkIn || b.checkin);
-        var be = _toDateTime(b.checkOut || b.checkout);
+        var bs = _toDateTime(b.checkIn || b.checkin, false);
+        // Nếu booking lưu dạng chỉ date (YYYY-MM-DD), coi checkout là end-of-day
+        var be = _toDateTime(b.checkOut || b.checkout, true);
         if (!bs || !be) continue;
 
         // overlap (half-open): start < be && end > bs
@@ -821,8 +832,8 @@ function _toMidnightDateStrict(v) {
 }
 
 function isRoomAvailableForPeriodStrict(roomId, checkin, checkout) {
-    var start = _toMidnightDateStrict(checkin);
-    var end = _toMidnightDateStrict(checkout);
+    var start = _toDateTime(checkin, false);
+    var end = _toDateTime(checkout, false);
     if (!start || !end || start >= end) return false;
 
     var bookings = [];
@@ -840,8 +851,8 @@ function isRoomAvailableForPeriodStrict(roomId, checkin, checkout) {
         var st = (b.status || '').toString().toLowerCase();
         if (st === 'cancelled' || st === 'canceled') continue;
 
-        var bs = _toDateTime(b.checkIn || b.checkin);
-        var be = _toDateTime(b.checkOut || b.checkout);
+        var bs = _toDateTime(b.checkIn || b.checkin, false);
+        var be = _toDateTime(b.checkOut || b.checkout, true);
         if (!bs || !be) continue;
 
         if (start < be && end > bs) {
