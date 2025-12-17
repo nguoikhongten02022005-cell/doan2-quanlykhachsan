@@ -171,30 +171,8 @@
 }
 
 /* Định vị lại popup cho trang tìm kiếm */
-#hopKhachTim {
-    display: none; 
-    position: absolute;
-    top: 100%;
-    left: 0; 
-    width: 320px;
-    margin-top: 10px;
-    z-index: 1000;
-}
-
 #hopKhachTim.show {
     display: block !important;
-}
-
-/* Responsive cho mobile */
-@media (max-width: 768px) {
-    #hopKhachTim {
-        position: fixed;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%);
-        width: 300px;
-        box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); /* Tạo nền tối */
-    }
 }
 
 .hop-chua-thanh-tim-kiem {
@@ -656,21 +634,7 @@
 }
 
 
-.hop-lich-tim {
-    position: fixed !important;
-    top: 20% !important;
-    left: 50% !important;
-    transform: translateX(-50%);
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
-    z-index: 3000;
-    margin-top: 0 !important;
-    width: 850px !important;
-    max-width: calc(100% - 24px) !important;
-}
-
+/* Giữ lại các style cho khung lịch (không phá layout) */
 .khung-lich-tim {
     display: flex;
     align-items: center;
@@ -752,15 +716,7 @@
     background: #ebf3ff;
 }
 
-@media (max-width: 768px) {
-    .hop-lich-tim {
-        width: calc(100% - 20px) !important;
-        left: 50% !important;
-        transform: translateX(-50%);
-        top: 12% !important;
-        max-width: 720px !important;
-    }
-
+@media (max-width: 767px) {
     .khung-lich-tim {
         flex-direction: column;
         padding: 16px;
@@ -771,9 +727,7 @@
         flex-direction: column;
         gap: 20px;
     }
-}
 
-@media (max-width: 767px) {
     .dieu-huong-thang-tim {
         width: 28px;
         height: 28px;
@@ -1371,5 +1325,84 @@
   #searchResultsContainer .the-phong .btns-cta .btn-book{
     flex: 1;
     text-align: center;
+  }
+}
+
+/* ==========================================================
+   FIX TRIỆT ĐỂ POPUP (LỊCH + KHÁCH) + CHỐNG TRÀN NGANG
+========================================================== */
+html, body { overflow-x: hidden; }
+
+/* ========== POPUP KHÁCH/PHÒNG ========== */
+/* Popup mặc định ẩn, chỉ hiện khi có class .show */
+#hopKhachTim { display: none; z-index: 20000; }
+#hopKhachTim.show { display: block !important; }
+
+/* Desktop/Tablet: dạng dropdown dưới ô khách */
+#hopKhachTim{
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: auto;
+  transform: none;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(0,0,0,.18);
+}
+
+/* Mobile: bottom sheet */
+@media (max-width: 600px){
+  #hopKhachTim{
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    top: auto !important;
+
+    width: auto !important;
+    transform: none !important;
+
+    max-height: calc(100vh - 140px);
+    overflow: auto;
+    border-radius: 18px;
+    box-shadow:
+      0 0 0 9999px rgba(0,0,0,.45),
+      0 18px 60px rgba(0,0,0,.22);
+  }
+}
+
+/* ========== POPUP LỊCH ========== */
+#hopLichTim { display: none; z-index: 20000; }
+#hopLichTim.show { display: block !important; }
+
+/* Desktop: dropdown căn giữa dưới ô ngày */
+#hopLichTim{
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 850px;
+  max-width: calc(100vw - 24px);
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(0,0,0,.18);
+}
+
+/* Mobile: modal (không tràn ngang, có overlay) */
+@media (max-width: 768px){
+  #hopLichTim{
+    position: fixed !important;
+    top: 12% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+
+    width: calc(100% - 20px) !important;
+    max-height: 80vh;
+    overflow: auto;
+
+    border-radius: 18px;
+    box-shadow:
+      0 0 0 9999px rgba(0,0,0,.45),
+      0 18px 60px rgba(0,0,0,.22);
   }
 }

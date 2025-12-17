@@ -141,20 +141,22 @@ function khoiTaoDatePickerTimKiem() {
         var popup = document.getElementById('hopLichTim');
         var khachPopup = document.getElementById('hopKhachTim');
         
-        if (khachPopup) khachPopup.style.display = 'none';
+        if (khachPopup) khachPopup.classList.remove('show');
         
-        if (popup && (popup.style.display === 'none' || !popup.style.display || popup.style.display === '')) {
-            popup.style.display = 'block';
-            taoHaiLichTim();
-        } else if (popup) {
-            popup.style.display = 'none';
+        if (popup) {
+            if (popup.classList.contains('show')) {
+                popup.classList.remove('show');
+            } else {
+                popup.classList.add('show');
+                taoHaiLichTim();
+            }
         }
     });
     
     document.addEventListener('click', function(e) {
         var popup = document.getElementById('hopLichTim');
         if (popup && !truongNgay.contains(e.target)) {
-            popup.style.display = 'none';
+            popup.classList.remove('show');
         }
     });
     
@@ -306,7 +308,7 @@ function chonNgayTim(date) {
     // Đóng popup lịch
     var popup = document.getElementById('hopLichTim');
     if (popup && nhanPhongTim && traPhongTim) {
-        popup.style.display = 'none';
+        popup.classList.remove('show');
     }
     
     // Cập nhật lại lịch
@@ -659,17 +661,31 @@ function khoiTaoChonKhachTimKiem() {
     
     if (!field || !popup) return;
     
+    const moPopup = () => popup.classList.add('show');
+    const dongPopup = () => popup.classList.remove('show');
+    const dangMo = () => popup.classList.contains('show');
+    
     field.addEventListener('click', function(e) {
         e.stopPropagation();
         var datePopup = document.getElementById('hopLichTim');
-        if (datePopup) datePopup.style.display = 'none';
-        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+        if (datePopup) datePopup.classList.remove('show');
+        dangMo() ? dongPopup() : moPopup();
     });
     
+    var doneBtn = document.getElementById('nutXongKhachTim');
+    if (doneBtn) {
+        doneBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dongPopup();
+        });
+    }
+    
     document.addEventListener('click', function(e) {
-        if (!field.contains(e.target) && !popup.contains(e.target)) {
-            popup.style.display = 'none';
-        }
+        if (!field.contains(e.target)) dongPopup();
+    });
+    
+    popup.addEventListener('click', function(e) {
+        e.stopPropagation();
     });
     
     var guestBtns = popup.querySelectorAll('.nut-khach');
@@ -704,14 +720,6 @@ function khoiTaoChonKhachTimKiem() {
             if (hienThiKhach) {
                 hienThiKhach.textContent = `${nguoiLon} người lớn · ${treEm} trẻ em · ${phong} phòng`;
             }
-        });
-    }
-    
-    var doneBtn = document.getElementById('nutXongKhachTim');
-    if (doneBtn) {
-        doneBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            popup.style.display = 'none';
         });
     }
 }
