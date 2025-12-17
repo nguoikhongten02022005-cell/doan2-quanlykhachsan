@@ -1426,3 +1426,75 @@ body.khoa-scroll{ overflow:hidden; }
     z-index:10001;
   }
 }
+
+/* =========================
+   FIX TRIỆT ĐỂ: popup lịch + popup khách/phòng
+   luôn đè lên kết quả (trang tim-kiem-phong)
+   ========================= */
+
+/* Nâng stacking context của thanh tìm kiếm lên cao */
+.thanh-tim-kiem-chinh,
+.hop-chua-thanh-tim-kiem,
+.form-tim-kiem-chinh{
+  position: relative !important;
+  z-index: 2000 !important;
+}
+
+/* Nền overlay (JS đã tạo #nenPopupTimKiem) */
+#nenPopupTimKiem{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease;
+  z-index: 2500; /* dưới popup */
+}
+#nenPopupTimKiem.hien{
+  opacity: 1;
+  pointer-events: auto;
+}
+body.khoa-scroll{
+  overflow: hidden;
+}
+
+/* Popup lịch */
+#hopLichTim{
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+
+  width: 950px;
+  max-width: calc(100vw - 24px);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.20);
+  z-index: 3000 !important; /* đè lên kết quả */
+}
+
+/* Popup khách/phòng */
+#hopKhachTim{
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  right: 0 !important;
+  left: auto !important;
+
+  z-index: 3000 !important; /* đè lên kết quả */
+}
+
+/* Mobile: đưa popup thành fixed để không bị "lọt dưới" khi cuộn */
+@media (max-width: 768px){
+  #hopLichTim, #hopKhachTim{
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    top: 110px !important;
+    width: calc(100vw - 24px) !important;
+    max-width: 720px !important;
+    max-height: calc(100vh - 140px) !important;
+    overflow: auto !important;
+    z-index: 3000 !important;
+  }
+}
