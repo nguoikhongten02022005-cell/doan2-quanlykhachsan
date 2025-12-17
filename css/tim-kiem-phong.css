@@ -1246,9 +1246,13 @@
 
 /* Label dịch vụ đặc biệt */
 #searchResultsContainer .the-phong .label-dich-vu,
+#searchResultsContainer .the-phong .dich-vu-label,
 .danh-sach-ket-qua .the-phong .label-dich-vu,
+.danh-sach-ket-qua .the-phong .dich-vu-label,
 .noi-dung-ket-qua .the-phong .label-dich-vu,
-.the-phong .label-dich-vu {
+.noi-dung-ket-qua .the-phong .dich-vu-label,
+.the-phong .label-dich-vu,
+.the-phong .dich-vu-label {
   font-size: 0.95rem;
   font-weight: 600;
   color: #374151;

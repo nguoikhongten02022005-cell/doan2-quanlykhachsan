@@ -98,184 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-/* ===== Enhance search cards: add right-hand price + CTA (idempotent, no duplicates) ===== */
-(function() {
-    function createBtnGroup(roomId, card) {
-        var btns = document.createElement('div');
-        btns.className = 'btns-cta';
-        var btnDetail = document.createElement('button');
-        btnDetail.className = 'btn-detail';
-        btnDetail.textContent = 'Chi Tiết';
-        var btnBook = document.createElement('button');
-        btnBook.className = 'btn-book';
-        btnBook.textContent = 'Đặt Ngay';
-
-        btnDetail.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (roomId) window.location.href = 'room-detail.html?id=' + roomId;
-            else {
-                var a = card.querySelector('a');
-                if (a && a.href) window.location.href = a.href;
-                else card.click();
-            }
-        });
-        btnBook.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (roomId) window.location.href = 'room-detail.html?id=' + roomId + '&action=book';
-            else card.click();
-        });
-
-        btns.appendChild(btnDetail);
-        btns.appendChild(btnBook);
-        return btns;
-    }
-
-    function enhanceCard(card) {
-        if (!card) return;
-
-        // if already enhanced skip (prevents re-processing)
-        if (card.dataset.enhanced === '1') return;
-
-        // get roomId (if any)
-        var onclick = card.getAttribute('onclick') || '';
-        var match = onclick.match(/room-detail\.html\?id=(\d+)/);
-        var roomId = match ? match[1] : null;
-
-        // ensure .noi-dung-phong exists
-        var noi = card.querySelector('.noi-dung-phong');
-        if (!noi) {
-            noi = document.createElement('div');
-            noi.className = 'noi-dung-phong';
-            // move all children except .anh-phong and existing .price-cta into noi
-            var children = Array.from(card.childNodes);
-            children.forEach(function(ch) {
-                if (ch.nodeType !== 1) return;
-                if (ch.classList && ch.classList.contains('anh-phong')) return;
-                if (ch.classList && ch.classList.contains('price-cta')) return;
-                noi.appendChild(ch);
-            });
-            var anh = card.querySelector('.anh-phong');
-            if (anh && anh.nextSibling) card.insertBefore(noi, anh.nextSibling);
-            else card.appendChild(noi);
-        }
-
-        // ensure .phan-duoi exists
-        var phan = noi.querySelector('.phan-duoi');
-        if (!phan) {
-            phan = document.createElement('div');
-            phan.className = 'phan-duoi';
-            noi.appendChild(phan);
-        }
-
-        // If any existing .price-cta present anywhere inside card, reuse it (and remove duplicates)
-        var existingPriceCtas = card.querySelectorAll('.price-cta');
-        var priceCta = null;
-        if (existingPriceCtas && existingPriceCtas.length) {
-            // keep first one, remove extras
-            priceCta = existingPriceCtas[0];
-            for (var i = 1; i < existingPriceCtas.length; i++) {
-                try { existingPriceCtas[i].parentNode.removeChild(existingPriceCtas[i]); } catch (e) {}
-            }
-        }
-
-        // ensure .gia-phong exists (may be in tieu-de-phong)
-        var priceNode = card.querySelector('.gia-phong') || card.querySelector('.gia-chinh');
-
-        if (!priceCta) {
-            // create new price-cta and attach price + buttons
-            priceCta = document.createElement('div');
-            priceCta.className = 'price-cta';
-
-            // move existing price node into priceCta if exists
-            if (priceNode) {
-                priceCta.appendChild(priceNode);
-            } else {
-                var p = document.createElement('div');
-                p.className = 'gia-phong';
-                p.textContent = '';
-                priceCta.appendChild(p);
-            }
-
-            // create buttons and append
-            var btns = createBtnGroup(roomId, card);
-            priceCta.appendChild(btns);
-        } else {
-            // priceCta exists; ensure it contains a .gia-phong and a .btns-cta
-            var existingPrice = priceCta.querySelector('.gia-phong') || priceCta.querySelector('.gia-chinh');
-            if (!existingPrice && priceNode) {
-                priceCta.insertBefore(priceNode, priceCta.firstChild);
-            }
-            var existingBtns = priceCta.querySelector('.btns-cta');
-            if (!existingBtns) {
-                var newBtns = createBtnGroup(roomId, card);
-                priceCta.appendChild(newBtns);
-            } else {
-                // ensure event listeners attached (avoid double-attach): replace with fresh handlers
-                // remove old buttons and re-create to avoid duplicate listeners/styles
-                try {
-                    existingBtns.parentNode.removeChild(existingBtns);
-                } catch (e) {}
-                var freshBtns = createBtnGroup(roomId, card);
-                priceCta.appendChild(freshBtns);
-            }
-        }
-
-        // Move priceCta into phan (if it's not already a child)
-        if (priceCta.parentNode !== phan) {
-            phan.appendChild(priceCta);
-        }
-
-        // As a final cleanup: remove stray .btn elements inside phan that are not .btn-detail/.btn-book
-        var strayBtns = phan.querySelectorAll('button');
-        strayBtns.forEach(function(b) {
-            if (!b.classList.contains('btn-detail') && !b.classList.contains('btn-book') && !b.classList.contains('btns-cta')) {
-                // keep it only if needed, else remove
-                if (b.textContent && (b.textContent.trim() === 'Chi Tiết' || b.textContent.trim() === 'Đặt Ngay')) {
-                    // if text matches, convert its classes to our standard classes
-                    // but simpler: remove to avoid duplicates; the standard btns were already created
-                    b.parentNode.removeChild(b);
-                } else {
-                    // leave others alone
-                }
-            }
-        });
-
-        // Mark processed
-        card.dataset.enhanced = '1';
-    }
-
-    function observeResults() {
-        var container = document.getElementById('searchResultsContainer') || document.querySelector('.danh-sach-ket-qua') || document.querySelector('.noi-dung-ket-qua');
-        if (!container) return;
-
-        // process existing
-        var cards = container.querySelectorAll('.the-phong');
-        cards.forEach(enhanceCard);
-
-        // observe new cards
-        var mo = new MutationObserver(function(muts) {
-            muts.forEach(function(m) {
-                if (m.addedNodes && m.addedNodes.length) {
-                    m.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1 && node.classList.contains('the-phong')) {
-                            enhanceCard(node);
-                        } else if (node.querySelectorAll) {
-                            var found = node.querySelectorAll('.the-phong');
-                            Array.prototype.forEach.call(found, enhanceCard);
-                        }
-                    });
-                }
-            });
-        });
-        mo.observe(container, { childList: true, subtree: true });
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', observeResults);
-    } else {
-        observeResults();
-    }
-})();
 
 function khoiTaoDatePickerTimKiem() {
     var truongNgay = document.querySelector('.truong-ngay-thang');
@@ -651,208 +473,183 @@ function performSearch(checkin, checkout, adults, children) {
 }
 
 function displayResults(rooms) {
-    const container = document.getElementById('searchResultsContainer');
-    const headerCount = document.getElementById('soLuongKetQua');
-    const resultSection = document.getElementById('noiDungKetQua');
+  const container = document.getElementById('searchResultsContainer');
+  const headerCount = document.getElementById('soLuongKetQua');
+  const resultSection = document.getElementById('noiDungKetQua');
 
-    if (headerCount) headerCount.textContent = rooms.length;
-    if (resultSection) resultSection.style.display = 'block';
+  if (!container) return;
 
-    if (rooms.length === 0) {
-        container.innerHTML = `
-            <div class="thong-bao-khong-tim-thay">
-                <i class="fas fa-search"></i>
-                <h3>Không tìm thấy phòng trống</h3>
-                <p>Rất tiếc, không có phòng nào phù hợp trong khoảng thời gian này.</p>
-                <a href="index.html" class="nut-xem-tinh-trang">Quay lại trang chủ</a>
-            </div>`;
-        return;
+  const total = Array.isArray(rooms) ? rooms.length : 0;
+  if (headerCount) headerCount.textContent = String(total);
+  if (resultSection) resultSection.style.display = 'block';
+
+  if (!rooms || rooms.length === 0) {
+    container.innerHTML = `
+      <div class="thong-bao-khong-tim-thay">
+        <i class="fas fa-search"></i>
+        <h3>Không tìm thấy phòng trống</h3>
+        <p>Rất tiếc, không có phòng nào phù hợp trong khoảng thời gian này.</p>
+        <a href="index.html" class="nut-xem-tinh-trang">Quay lại trang chủ</a>
+      </div>`;
+    return;
+  }
+
+  // helper nội bộ: normalize tiện ích
+  function normalizeAmenities(amenities) {
+    if (!amenities) return [];
+    if (Array.isArray(amenities)) {
+      return amenities.map(x => String(x || '').trim()).filter(Boolean);
+    }
+    return String(amenities)
+      .split(/[,;|]/)
+      .map(x => x.trim())
+      .filter(Boolean);
+  }
+
+  // helper nội bộ: map tiện ích -> icon + text
+  function getAmenityIconAndText(amenity) {
+    const aLower = String(amenity || '').toLowerCase();
+    if (aLower.includes('wifi')) return { icon: 'fas fa-wifi', text: 'Wifi miễn phí' };
+    if (aLower.includes('tv')) return { icon: 'fas fa-tv', text: 'TV màn hình phẳng' };
+    if (aLower.includes('mini') || aLower.includes('bar')) return { icon: 'fas fa-glass-martini-alt', text: 'Minibar' };
+    if (aLower.includes('điều hòa') || aLower.includes('dieu hoa') || aLower.includes('ac')) return { icon: 'fas fa-snowflake', text: 'Điều hòa' };
+    if (aLower.includes('bàn') || aLower.includes('ban') || aLower.includes('desk')) return { icon: 'fas fa-desktop', text: 'Bàn làm việc' };
+    if (aLower.includes('bồn tắm') || aLower.includes('bon tam') || aLower.includes('bath')) return { icon: 'fas fa-bath', text: 'Bồn tắm' };
+    return { icon: 'fas fa-check', text: amenity };
+  }
+
+  // Render đúng cấu trúc DOM theo CSS tim-kiem-phong.css
+  container.innerHTML = '';
+
+  rooms.forEach(room => {
+    const roomId = (room && room.id != null) ? String(room.id) : '';
+    const priceVal = Number(room && room.price) || 0;
+
+    // --- CARD ---
+    const card = document.createElement('div');
+    // Giữ thêm class the-phong-ket-qua để không phá các rule grid-view đang có
+    card.className = 'the-phong the-phong-ket-qua';
+    card.dataset.price = String(priceVal);
+
+    // Click vào card -> chi tiết
+    if (roomId) {
+      card.addEventListener('click', () => {
+        window.location.href = 'room-detail.html?id=' + encodeURIComponent(roomId);
+      });
     }
 
-    // Build results via DOM to avoid XSS and set numeric data-price for sorting
-    container.innerHTML = '';
-    rooms.forEach(room => {
-        const priceVal = Number(room.price) || 0;
+    // --- Ảnh ---
+    const anhWrap = document.createElement('div');
+    anhWrap.className = 'anh-phong';
 
-        let cap = { adults: 2, children: 0 };
-        if (typeof parseCapacity === 'function') {
-            cap = parseCapacity(room);
-        } else {
-            if (room.capacity) {
-                const matchAdults = room.capacity.toString().match(/(\d+)\s*người lớn/i);
-                const matchChildren = room.capacity.toString().match(/(\d+)\s*trẻ em/i);
-                if (matchAdults) cap.adults = parseInt(matchAdults[1]);
-                if (matchChildren) cap.children = parseInt(matchChildren[1]);
-            }
-        }
+    const img = document.createElement('img');
+    img.alt = (room && room.name) ? room.name : 'Phòng khách sạn';
+    img.src =
+      (room && room.image) ||
+      'https://images.unsplash.com/photo-1560067174-8943bd2d0c1f?auto=format&fit=crop&w=1200&q=60';
+    anhWrap.appendChild(img);
 
-        const amenitiesArray = room.amenities ? room.amenities.split(',').map(a => a.trim()).slice(0,5) : [];
+    card.appendChild(anhWrap);
 
-        // Card container với class .the-phong để match với CSS
-        const card = document.createElement('div');
-        card.className = 'the-phong';
-        card.dataset.id = String(room.id);
-        card.dataset.price = String(priceVal);
-        card.setAttribute('onclick', 'window.location.href=\'room-detail.html?id=' + encodeURIComponent(room.id) + '\'');
+    // --- Nội dung ---
+    const noiDung = document.createElement('div');
+    noiDung.className = 'noi-dung-phong';
 
-        // Ảnh bên trái
-        const anhWrap = document.createElement('div');
-        anhWrap.className = 'anh-phong';
-        const img = document.createElement('img');
-        img.src = room.image || '';
-        img.alt = room.name || '';
-        img.onerror = function() { this.src = '../img/khachsan1(1).jpg'; };
-        anhWrap.appendChild(img);
+    // Header: Tên + sức chứa (đúng style index)
+    const tieuDe = document.createElement('div');
+    tieuDe.className = 'tieu-de-phong';
 
-        // Nội dung bên phải
-        const noiDung = document.createElement('div');
-        noiDung.className = 'noi-dung-phong';
+    const h3 = document.createElement('h3');
+    h3.textContent = (room && room.name) ? room.name : 'Phòng';
+    tieuDe.appendChild(h3);
 
-        // Tiêu đề và sức chứa
-        const tieuDe = document.createElement('div');
-        tieuDe.className = 'tieu-de-phong';
-        
-        const h3 = document.createElement('h3');
-        h3.className = 'ten-phong';
-        h3.textContent = room.name || '';
-        tieuDe.appendChild(h3);
+    // Sức chứa
+    let cap = { adults: 2, children: 0 };
+    if (typeof parseCapacity === 'function') cap = parseCapacity(room);
 
-        // Sức chứa với icon
-        const sucChua = document.createElement('div');
-        sucChua.className = 'suc-chua-phong';
-        const iconNguoi = document.createElement('i');
-        iconNguoi.className = 'fas fa-users';
-        sucChua.appendChild(iconNguoi);
-        const textCap = document.createTextNode(cap.adults + ' người lớn • ' + cap.children + ' trẻ em');
-        sucChua.appendChild(textCap);
-        tieuDe.appendChild(sucChua);
+    const adults = Number(cap && cap.adults) || 0;
+    const children = Number(cap && cap.children) || 0;
 
-        noiDung.appendChild(tieuDe);
+    const sucChua = document.createElement('div');
+    sucChua.className = 'suc-chua-phong';
+    sucChua.innerHTML =
+      '<i class="fas fa-users"></i>' +
+      '<span>' + adults + ' người lớn · ' + children + ' trẻ em</span>';
 
-        // Dịch vụ đặc biệt
-        if (amenitiesArray.length > 0) {
-            const labelDichVu = document.createElement('div');
-            labelDichVu.className = 'label-dich-vu';
-            labelDichVu.textContent = 'Dịch vụ đặc biệt:';
-            noiDung.appendChild(labelDichVu);
+    tieuDe.appendChild(sucChua);
+    noiDung.appendChild(tieuDe);
 
-            const tienIchDiv = document.createElement('div');
-            tienIchDiv.className = 'tien-ich-phong';
-            amenitiesArray.forEach(amenity => {
-                const span = document.createElement('span');
-                span.className = 'tien-ich';
-                const i = document.createElement('i');
-                const aLower = amenity.toLowerCase();
-                let icon = 'fas fa-check';
-                if (aLower.indexOf('wifi') !== -1) icon = 'fas fa-wifi';
-                else if (aLower.indexOf('tv') !== -1) icon = 'fas fa-tv';
-                else if (aLower.indexOf('minibar') !== -1 || aLower.indexOf('mini bar') !== -1) icon = 'fas fa-glass-martini';
-                else if (aLower.indexOf('điều hòa') !== -1) icon = 'fas fa-snowflake';
-                else if (aLower.indexOf('bàn làm việc') !== -1) icon = 'fas fa-laptop';
-                else if (aLower.indexOf('ban công') !== -1) icon = 'fas fa-door-open';
-                else if (aLower.indexOf('phòng tắm') !== -1 || aLower.indexOf('bồn tắm') !== -1) icon = 'fas fa-bath';
-                i.className = icon;
-                span.appendChild(i);
-                span.appendChild(document.createTextNode(' ' + amenity));
-                tienIchDiv.appendChild(span);
-            });
-            noiDung.appendChild(tienIchDiv);
-        }
+    // Label tiện ích (giống index screenshot)
+    const label = document.createElement('div');
+    label.className = 'dich-vu-label';
+    label.textContent = 'Dịch vụ đặc biệt:';
+    noiDung.appendChild(label);
 
-        // Phần dưới: giá và nút
-        const phanDuoi = document.createElement('div');
-        phanDuoi.className = 'phan-duoi';
+    // Tiện ích
+    const tienIchBox = document.createElement('div');
+    tienIchBox.className = 'tien-ich-phong-tim-kiem';
 
-        const priceCta = document.createElement('div');
-        priceCta.className = 'price-cta';
-
-        const priceDiv = document.createElement('div');
-        priceDiv.className = 'gia-phong';
-        priceDiv.textContent = (typeof formatPrice === 'function' ? formatPrice(priceVal) : priceVal) + ' / đêm';
-        priceCta.appendChild(priceDiv);
-
-        const btns = document.createElement('div');
-        btns.className = 'btns-cta';
-        const btnDetail = document.createElement('button');
-        btnDetail.className = 'btn-detail';
-        btnDetail.textContent = 'Chi Tiết';
-        const btnBook = document.createElement('button');
-        btnBook.className = 'btn-book';
-        btnBook.textContent = 'Đặt Ngay';
-        btns.appendChild(btnDetail);
-        btns.appendChild(btnBook);
-        priceCta.appendChild(btns);
-
-        phanDuoi.appendChild(priceCta);
-        noiDung.appendChild(phanDuoi);
-
-        // Gắn vào card
-        card.appendChild(anhWrap);
-        card.appendChild(noiDung);
-
-        container.appendChild(card);
+    const amenitiesArr = normalizeAmenities(room && room.amenities);
+    // Giới hạn 6 cái để không tràn layout
+    amenitiesArr.slice(0, 6).forEach(a => {
+      const info = getAmenityIconAndText(a);
+      const chip = document.createElement('span');
+      chip.className = 'tien-ich';
+      chip.innerHTML = `<i class="${info.icon}"></i> ${info.text}`;
+      tienIchBox.appendChild(chip);
     });
+
+    noiDung.appendChild(tienIchBox);
+
+    // --- Phần dưới: giá + CTA (đúng CSS .phan-duoi/.price-cta/.btns-cta) ---
+    const phanDuoi = document.createElement('div');
+    phanDuoi.className = 'phan-duoi';
+
+    const priceCta = document.createElement('div');
+    priceCta.className = 'price-cta';
+
+    const gia = document.createElement('div');
+    gia.className = 'gia-phong';
+    const giaText = (typeof formatPrice === 'function')
+      ? formatPrice(priceVal)
+      : priceVal.toLocaleString('vi-VN');
+    gia.textContent = giaText + ' đ / đêm';
+
+    const btns = document.createElement('div');
+    btns.className = 'btns-cta';
+
+    const btnDetail = document.createElement('button');
+    btnDetail.type = 'button';
+    btnDetail.className = 'btn-detail';
+    btnDetail.textContent = 'Chi Tiết';
+    btnDetail.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (roomId) window.location.href = 'room-detail.html?id=' + encodeURIComponent(roomId);
+    });
+
+    const btnBook = document.createElement('button');
+    btnBook.type = 'button';
+    btnBook.className = 'btn-book';
+    btnBook.textContent = 'Đặt Ngay';
+    btnBook.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (roomId) window.location.href = 'room-detail.html?id=' + encodeURIComponent(roomId) + '&action=book';
+    });
+
+    btns.appendChild(btnDetail);
+    btns.appendChild(btnBook);
+
+    priceCta.appendChild(gia);
+    priceCta.appendChild(btns);
+
+    phanDuoi.appendChild(priceCta);
+    noiDung.appendChild(phanDuoi);
+
+    card.appendChild(noiDung);
+    container.appendChild(card);
+  });
 }
 
-// Hàm đọc tham số từ URL và thực hiện tìm kiếm tự động
-function loadSearchDataFromURL() {
-    // 1. Lấy tham số từ URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const checkinStr = urlParams.get('checkin');
-    const checkoutStr = urlParams.get('checkout');
-    
-    // Lấy số lượng khách, nếu không có thì mặc định là 1 người lớn
-    const adults = parseInt(urlParams.get('adults')) || 1;
-    const children = parseInt(urlParams.get('children')) || 0;
-    const roomsCount = parseInt(urlParams.get('rooms')) || 1;
-
-    // 2. Nếu có ngày checkin/checkout thì thực hiện tìm kiếm
-    if (checkinStr && checkoutStr) {
-        const cin = parseDateYYYYMMDD(checkinStr);
-        const cout = parseDateYYYYMMDD(checkoutStr);
-        
-        // Reset giờ về 0 để so sánh chính xác (parseDate already creates local date)
-        if (cin) cin.setHours(0, 0, 0, 0);
-        if (cout) cout.setHours(0, 0, 0, 0);
-
-        // Cập nhật biến toàn cục để lịch hiển thị đúng
-        nhanPhongTim = cin;
-        traPhongTim = cout;
-        
-        // Cập nhật tháng hiển thị trên lịch
-        thang1Tim = new Date(cin.getFullYear(), cin.getMonth(), 1);
-        thang2Tim = new Date(cin.getFullYear(), cin.getMonth() + 1, 1);
-        
-        // Cập nhật lại lịch để hiển thị ngày đã chọn
-        taoHaiLichTim();
-
-        // Cập nhật giao diện hiển thị ngày tháng trên thanh tìm kiếm
-        const hienThiNgay = document.getElementById('hienThiNgayTim');
-        if (hienThiNgay) {
-            hienThiNgay.textContent = formatDate(cin) + ' - ' + formatDate(cout);
-        }
-
-        // Cập nhật giao diện hiển thị số khách
-        const hienThiKhach = document.getElementById('hienThiKhachTim');
-        if (hienThiKhach) {
-            hienThiKhach.textContent = `${adults} người lớn · ${children} trẻ em · ${roomsCount} phòng`;
-        }
-        
-        // Cập nhật số lượng trong popup (nếu cần)
-        if (document.getElementById('soNguoiLonTim')) {
-            document.getElementById('soNguoiLonTim').textContent = adults;
-        }
-        if (document.getElementById('soTreEmTim')) {
-            document.getElementById('soTreEmTim').textContent = children;
-        }
-        if (document.getElementById('soPhongTim')) {
-            document.getElementById('soPhongTim').textContent = roomsCount;
-        }
-
-        // 3. GỌI HÀM TÌM KIẾM CHÍNH
-        performSearch(cin, cout, adults, children);
-    }
-}
 
 // Hàm khởi tạo chọn khách cho trang tìm kiếm
 function khoiTaoChonKhachTimKiem() {
