@@ -104,26 +104,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!card || card.dataset.enhanced === '1') return;
         card.dataset.enhanced = '1';
 
-        // ensure class names consistent
-        var priceNode = card.querySelector('.gia-phong');
-        // If price was inside title, move or clone it
+        // Try find an existing price node
+        var priceNode = card.querySelector('.gia-phong') || card.querySelector('.gia-chinh');
         var priceClone;
         if (priceNode) {
-            priceClone = priceNode; // reuse the node (will be moved)
+            priceClone = priceNode; // we'll move it into the bottom area
         } else {
             priceClone = document.createElement('div');
             priceClone.className = 'gia-phong';
             priceClone.textContent = '';
         }
 
-        // create price-cta container
+        // Build price+cta container
         var priceCta = document.createElement('div');
         priceCta.className = 'price-cta';
-
-        // Add price
         priceCta.appendChild(priceClone);
 
-        // create button group
         var btns = document.createElement('div');
         btns.className = 'btns-cta';
         var btnDetail = document.createElement('button');
@@ -137,51 +133,49 @@ document.addEventListener('DOMContentLoaded', function() {
         btns.appendChild(btnBook);
         priceCta.appendChild(btns);
 
-        // --- NEW: put priceCta inside .phan-duoi (create if missing) inside .noi-dung-phong ---
+        // Ensure .noi-dung-phong exists; if not, create and move non-image children there
         var noi = card.querySelector('.noi-dung-phong');
         if (!noi) {
-            // if there's no .noi-dung-phong, create it and move existing non-image children there
             noi = document.createElement('div');
             noi.className = 'noi-dung-phong';
-            var children = Array.from(card.children);
+            var children = Array.from(card.childNodes);
             children.forEach(function(ch) {
-                if (ch === null) return;
+                if (ch.nodeType !== 1) return;
                 if (ch.classList && ch.classList.contains('anh-phong')) return;
-                // skip priceCta (not yet attached)
-                if (ch === priceCta) return;
+                if (ch.classList && ch.classList.contains('price-cta')) return;
                 noi.appendChild(ch);
             });
-            // insert after anh-phong if exists
             var anh = card.querySelector('.anh-phong');
             if (anh && anh.nextSibling) card.insertBefore(noi, anh.nextSibling);
             else card.appendChild(noi);
         }
 
+        // Ensure .phan-duoi exists inside .noi-dung-phong
         var phan = noi.querySelector('.phan-duoi');
         if (!phan) {
             phan = document.createElement('div');
             phan.className = 'phan-duoi';
             noi.appendChild(phan);
         }
-        // move priceCta into phan-duoi
+
+        // Put priceCta into .phan-duoi (this will move price node if it existed)
         phan.appendChild(priceCta);
 
-        // get room id from card onclick (if exists)
+        // Connect buttons -> navigate to room detail / book
         var onclick = card.getAttribute('onclick') || '';
         var match = onclick.match(/room-detail\.html\?id=(\d+)/);
         var roomId = match ? match[1] : null;
 
-        // Button behaviors
         btnDetail.addEventListener('click', function(e) {
             e.stopPropagation();
             if (roomId) window.location.href = 'room-detail.html?id=' + roomId;
             else {
-                // try to find a link inside card or click card
                 var a = card.querySelector('a');
                 if (a && a.href) window.location.href = a.href;
                 else card.click();
             }
         });
+
         btnBook.addEventListener('click', function(e) {
             e.stopPropagation();
             if (roomId) window.location.href = 'room-detail.html?id=' + roomId + '&action=book';
@@ -190,22 +184,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function observeResults() {
-        var container = document.getElementById('searchResultsContainer') || document.querySelector('.danh-sach-ket-qua');
+        var container = document.getElementById('searchResultsContainer') || document.querySelector('.danh-sach-ket-qua') || document.querySelector('.noi-dung-ket-qua');
         if (!container) return;
 
-        // process existing cards
+        // Process existing cards
         var cards = container.querySelectorAll('.the-phong');
         cards.forEach(enhanceCard);
 
-        // observe new cards
+        // Observe new cards (ajax / pagination)
         var mo = new MutationObserver(function(muts) {
             muts.forEach(function(m) {
                 if (m.addedNodes && m.addedNodes.length) {
                     m.addedNodes.forEach(function(node) {
                         if (node.nodeType === 1 && node.classList.contains('the-phong')) {
                             enhanceCard(node);
-                        } else {
-                            var found = node.querySelectorAll ? node.querySelectorAll('.the-phong') : [];
+                        } else if (node.querySelectorAll) {
+                            var found = node.querySelectorAll('.the-phong');
                             Array.prototype.forEach.call(found, enhanceCard);
                         }
                     });
@@ -213,7 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         mo.observe(container, { childList: true, subtree: true });
-        // keep it alive (do NOT disconnect) so future pages also get transformed
     }
 
     if (document.readyState === 'loading') {
