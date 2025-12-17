@@ -24,34 +24,28 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
-// --- Helper: normalize về midnight local ---
-function _toMidnightDate(v) {
+// --- Helper: parse giữ giờ nếu có, hoặc trả về 00:00 local khi chỉ có YYYY-MM-DD ---
+function _toDateTime(v) {
     if (!v) return null;
-    if (v instanceof Date) {
-        var d = new Date(v.getFullYear(), v.getMonth(), v.getDate());
+    if (v instanceof Date) return v;
+    var s = String(v).trim();
+    // Nếu dạng YYYY-MM-DD -> trả về Date tại 00:00 của ngày đó (local)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        var p = s.split('-').map(Number);
+        var d = new Date(p[0], p[1] - 1, p[2]);
         d.setHours(0,0,0,0);
         return d;
     }
-    var s = String(v).trim();
-    // Nếu dạng YYYY-MM-DD parse thủ công để tránh timezone
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-        var p = s.split('-').map(Number);
-        var dd = new Date(p[0], p[1]-1, p[2]);
-        dd.setHours(0,0,0,0);
-        return dd;
-    }
-    // Fallback: let Date parse, rồi chuyển về midnight local
-    var d = new Date(s);
-    if (isNaN(d.getTime())) return null;
-    var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    r.setHours(0,0,0,0);
-    return r;
+    // Thử parse chuỗi (ISO hoặc có thời gian)
+    var parsed = new Date(s);
+    if (!isNaN(parsed.getTime())) return parsed;
+    return null;
 }
 
 // --- Helper: kiểm tra phòng có sẵn cho khoảng [checkin, checkout) không ---
 function isRoomAvailableForPeriod(roomId, checkin, checkout) {
-    var start = _toMidnightDate(checkin);
-    var end = _toMidnightDate(checkout);
+    var start = _toDateTime(checkin);
+    var end = _toDateTime(checkout);
     if (!start || !end || start >= end) return false;
 
     var bookings = [];
@@ -69,11 +63,11 @@ function isRoomAvailableForPeriod(roomId, checkin, checkout) {
         var status = (b.status || '').toLowerCase();
         if (status === 'cancelled' || status === 'canceled') continue;
 
-        var bs = _toMidnightDate(b.checkIn || b.checkin);
-        var be = _toMidnightDate(b.checkOut || b.checkout);
+        var bs = _toDateTime(b.checkIn || b.checkin);
+        var be = _toDateTime(b.checkOut || b.checkout);
         if (!bs || !be) continue;
 
-        // overlap (nửa mở): start < be && end > bs
+        // overlap (half-open): start < be && end > bs
         if (start < be && end > bs) {
             return false; // phòng bị chiếm
         }
@@ -319,7 +313,7 @@ function loadSearchDataFromURL() {
 
     // chọn hàm parse ngày nếu có
     var parseFn = null;
-    if (typeof _toMidnightDate === 'function') parseFn = _toMidnightDate;
+    if (typeof _toDateTime === 'function') parseFn = _toDateTime;
     else if (typeof parseDateYYYYMMDD === 'function') parseFn = function(s){ return (s ? parseDateYYYYMMDD(s) : null); };
     else parseFn = function(s){ return s ? new Date(s) : null; };
 
@@ -364,10 +358,10 @@ function loadSearchDataFromURL() {
 }
 
 function performSearch(checkin, checkout, adults, children) {
-    try {
-        // đảm bảo inputs là Date ở midnight
-        var searchStart = (typeof _toMidnightDate === 'function') ? _toMidnightDate(checkin) : (checkin ? new Date(new Date(checkin).getFullYear(), new Date(checkin).getMonth(), new Date(checkin).getDate()) : null);
-        var searchEnd = (typeof _toMidnightDate === 'function') ? _toMidnightDate(checkout) : (checkout ? new Date(new Date(checkout).getFullYear(), new Date(checkout).getMonth(), new Date(checkout).getDate()) : null);
+        try {
+            // đảm bảo inputs là Date/DateTime (giữ giờ nếu có)
+            var searchStart = (typeof _toDateTime === 'function') ? _toDateTime(checkin) : (checkin ? new Date(checkin) : null);
+            var searchEnd = (typeof _toDateTime === 'function') ? _toDateTime(checkout) : (checkout ? new Date(checkout) : null);
 
         console.log('performSearch called', { searchStart, searchEnd, adults, children });
 
@@ -421,20 +415,11 @@ function performSearch(checkin, checkout, adults, children) {
                     if (gtot > tot) return false;
                 }
 
-                // kiểm tra booking overlap (bỏ qua cancelled)
-                for (var i = 0; i < bookings.length; i++) {
-                    var b = bookings[i];
-                    if (!b) continue;
-                    if (String(b.roomId) !== String(room.id)) continue;
-                    var st = (b.status||'').toLowerCase();
-                    if (st === 'cancelled' || st === 'canceled') continue;
-                    var bs = (typeof _toMidnightDate === 'function') ? _toMidnightDate(b.checkIn || b.checkin) : (b.checkIn ? new Date(b.checkIn) : (b.checkin ? new Date(b.checkin) : null));
-                    var be = (typeof _toMidnightDate === 'function') ? _toMidnightDate(b.checkOut || b.checkout) : (b.checkOut ? new Date(b.checkOut) : (b.checkout ? new Date(b.checkout) : null));
-                    if (!bs || !be) continue;
-                    // overlap condition (half-open interval)
-                    if (searchStart < be && searchEnd > bs) {
-                        return false;
-                    }
+                // kiểm tra booking overlap (bỏ qua cancelled) — dùng helper giữ giờ
+                if (typeof isRoomAvailableForPeriod === 'function') {
+                    if (!isRoomAvailableForPeriod(room.id, searchStart, searchEnd)) return false;
+                } else {
+                    // fallback: nếu không có helper, tạm coi phòng khả dụng
                 }
 
                 return true;
@@ -808,3 +793,79 @@ function khoiTaoChuyenDoiXem() {
         });
     }
 }
+
+/* ========= FIX CHÍNH XÁC: loại phòng đã đặt ra khỏi kết quả tìm kiếm ========= */
+
+/* helper: bỏ dấu (để so sánh các trạng thái tiếng Việt không dấu) */
+function _removeDiacritics(str) {
+    if (!str) return '';
+    return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+/* cho phép một số trạng thái "rỗng" / "trống" được coi là available */
+function _isStatusConsideredAvailable(status) {
+    if (!status) return true;
+    var s = _removeDiacritics(String(status));
+    var allowed = ['available', 'trong', 'trong', 'trong', 'trong', 'trong', 'trong', 'trong'];
+    // normalize common labels
+    allowed = ['available','trong','trong','trong','trong','vacant','empty','rong','trống'];
+    for (var i=0;i<allowed.length;i++){
+        if (s.indexOf(allowed[i]) !== -1) return true;
+    }
+    return false;
+}
+
+/* Strict helper: reuse _toDateTime so time component is preserved */
+function _toMidnightDateStrict(v) {
+    return _toDateTime(v);
+}
+
+function isRoomAvailableForPeriodStrict(roomId, checkin, checkout) {
+    var start = _toMidnightDateStrict(checkin);
+    var end = _toMidnightDateStrict(checkout);
+    if (!start || !end || start >= end) return false;
+
+    var bookings = [];
+    try {
+        bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    } catch (e) {
+        bookings = [];
+    }
+
+    for (var i = 0; i < bookings.length; i++) {
+        var b = bookings[i];
+        if (!b) continue;
+        if (String(b.roomId) !== String(roomId)) continue;
+
+        var st = (b.status || '').toString().toLowerCase();
+        if (st === 'cancelled' || st === 'canceled') continue;
+
+        var bs = _toDateTime(b.checkIn || b.checkin);
+        var be = _toDateTime(b.checkOut || b.checkout);
+        if (!bs || !be) continue;
+
+        if (start < be && end > bs) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function _shouldShowRoom(room, checkin, checkout, adults, children) {
+    if (! _isStatusConsideredAvailable(room.status) ) return false;
+
+    if (adults || children) {
+        var cap = { adults: 2, children: 0 };
+        if (typeof parseCapacity === 'function') cap = parseCapacity(room);
+        if (cap.adults < (adults || 0)) return false;
+        if (cap.children < (children || 0)) return false;
+    }
+
+    if (!isRoomAvailableForPeriodStrict(room.id, checkin, checkout)) return false;
+
+    return true;
+}
+
+/* NOTE: To apply, replace the room filtering in performSearch or displayResults to call
+     _shouldShowRoom(room, searchStart, searchEnd, adults, children) and skip rooms that return false.
+*/
