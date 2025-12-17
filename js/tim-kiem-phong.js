@@ -24,6 +24,63 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
+// --- Helper: normalize về midnight local ---
+function _toMidnightDate(v) {
+    if (!v) return null;
+    if (v instanceof Date) {
+        var d = new Date(v.getFullYear(), v.getMonth(), v.getDate());
+        d.setHours(0,0,0,0);
+        return d;
+    }
+    var s = String(v).trim();
+    // Nếu dạng YYYY-MM-DD parse thủ công để tránh timezone
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        var p = s.split('-').map(Number);
+        var dd = new Date(p[0], p[1]-1, p[2]);
+        dd.setHours(0,0,0,0);
+        return dd;
+    }
+    // Fallback: let Date parse, rồi chuyển về midnight local
+    var d = new Date(s);
+    if (isNaN(d.getTime())) return null;
+    var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    r.setHours(0,0,0,0);
+    return r;
+}
+
+// --- Helper: kiểm tra phòng có sẵn cho khoảng [checkin, checkout) không ---
+function isRoomAvailableForPeriod(roomId, checkin, checkout) {
+    var start = _toMidnightDate(checkin);
+    var end = _toMidnightDate(checkout);
+    if (!start || !end || start >= end) return false;
+
+    var bookings = [];
+    try {
+        bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    } catch (e) {
+        console.warn('Không parse được bookings:', e);
+        bookings = [];
+    }
+
+    for (var i = 0; i < bookings.length; i++) {
+        var b = bookings[i];
+        if (!b) continue;
+        if (String(b.roomId) !== String(roomId)) continue;
+        var status = (b.status || '').toLowerCase();
+        if (status === 'cancelled' || status === 'canceled') continue;
+
+        var bs = _toMidnightDate(b.checkIn || b.checkin);
+        var be = _toMidnightDate(b.checkOut || b.checkout);
+        if (!bs || !be) continue;
+
+        // overlap (nửa mở): start < be && end > bs
+        if (start < be && end > bs) {
+            return false; // phòng bị chiếm
+        }
+    }
+    return true; // không có booking chồng lấp
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
     khoiTaoMenuDiDong();
@@ -249,60 +306,6 @@ function chonNgayTim(date) {
     taoHaiLichTim();
     
     return date;
-}
-// --- Helper: normalize về midnight local ---
-function _toMidnightDate(v) {
-  if (!v) return null;
-  if (v instanceof Date) {
-    var d = new Date(v.getFullYear(), v.getMonth(), v.getDate());
-    d.setHours(0,0,0,0);
-    return d;
-  }
-  var s = String(v).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-    var p = s.split('-').map(Number);
-    var dd = new Date(p[0], p[1]-1, p[2]);
-    dd.setHours(0,0,0,0);
-    return dd;
-  }
-  var d = new Date(s);
-  if (isNaN(d.getTime())) return null;
-  var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  r.setHours(0,0,0,0);
-  return r;
-}
-
-// --- Helper: kiểm tra phòng có sẵn cho khoảng [checkin, checkout) không ---
-function isRoomAvailableForPeriod(roomId, checkin, checkout) {
-  var start = _toMidnightDate(checkin);
-  var end = _toMidnightDate(checkout);
-  if (!start || !end || start >= end) return false;
-
-  var bookings = [];
-  try {
-    bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-  } catch (e) {
-    console.warn('Không parse được bookings:', e);
-    bookings = [];
-  }
-
-  for (var i = 0; i < bookings.length; i++) {
-    var b = bookings[i];
-    if (!b) continue;
-    if (String(b.roomId) !== String(roomId)) continue;
-    var status = (b.status || '').toLowerCase();
-    if (status === 'cancelled' || status === 'canceled') continue;
-
-    var bs = _toMidnightDate(b.checkIn || b.checkin);
-    var be = _toMidnightDate(b.checkOut || b.checkout);
-    if (!bs || !be) continue;
-
-    // overlap condition (nửa mở): start < be && end > bs
-    if (start < be && end > bs) {
-      return false; // phòng bị chiếm trong khoảng này
-    }
-  }
-  return true; // không có booking chồng lấp
 }
 
 function performSearch(checkin, checkout, adults, children) {
