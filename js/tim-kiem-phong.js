@@ -98,28 +98,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-/* ===== Enhance search cards: add right-hand price + CTA (idempotent) ===== */
+/* ===== Enhance search cards: add right-hand price + CTA (idempotent, no duplicates) ===== */
 (function() {
-    function enhanceCard(card) {
-        if (!card || card.dataset.enhanced === '1') return;
-        card.dataset.enhanced = '1';
-
-        // Try find an existing price node
-        var priceNode = card.querySelector('.gia-phong') || card.querySelector('.gia-chinh');
-        var priceClone;
-        if (priceNode) {
-            priceClone = priceNode; // we'll move it into the bottom area
-        } else {
-            priceClone = document.createElement('div');
-            priceClone.className = 'gia-phong';
-            priceClone.textContent = '';
-        }
-
-        // Build price+cta container
-        var priceCta = document.createElement('div');
-        priceCta.className = 'price-cta';
-        priceCta.appendChild(priceClone);
-
+    function createBtnGroup(roomId, card) {
         var btns = document.createElement('div');
         btns.className = 'btns-cta';
         var btnDetail = document.createElement('button');
@@ -129,15 +110,43 @@ document.addEventListener('DOMContentLoaded', function() {
         btnBook.className = 'btn-book';
         btnBook.textContent = 'Đặt Ngay';
 
+        btnDetail.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (roomId) window.location.href = 'room-detail.html?id=' + roomId;
+            else {
+                var a = card.querySelector('a');
+                if (a && a.href) window.location.href = a.href;
+                else card.click();
+            }
+        });
+        btnBook.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (roomId) window.location.href = 'room-detail.html?id=' + roomId + '&action=book';
+            else card.click();
+        });
+
         btns.appendChild(btnDetail);
         btns.appendChild(btnBook);
-        priceCta.appendChild(btns);
+        return btns;
+    }
 
-        // Ensure .noi-dung-phong exists; if not, create and move non-image children there
+    function enhanceCard(card) {
+        if (!card) return;
+
+        // if already enhanced skip (prevents re-processing)
+        if (card.dataset.enhanced === '1') return;
+
+        // get roomId (if any)
+        var onclick = card.getAttribute('onclick') || '';
+        var match = onclick.match(/room-detail\.html\?id=(\d+)/);
+        var roomId = match ? match[1] : null;
+
+        // ensure .noi-dung-phong exists
         var noi = card.querySelector('.noi-dung-phong');
         if (!noi) {
             noi = document.createElement('div');
             noi.className = 'noi-dung-phong';
+            // move all children except .anh-phong and existing .price-cta into noi
             var children = Array.from(card.childNodes);
             children.forEach(function(ch) {
                 if (ch.nodeType !== 1) return;
@@ -150,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
             else card.appendChild(noi);
         }
 
-        // Ensure .phan-duoi exists inside .noi-dung-phong
+        // ensure .phan-duoi exists
         var phan = noi.querySelector('.phan-duoi');
         if (!phan) {
             phan = document.createElement('div');
@@ -158,40 +167,92 @@ document.addEventListener('DOMContentLoaded', function() {
             noi.appendChild(phan);
         }
 
-        // Put priceCta into .phan-duoi (this will move price node if it existed)
-        phan.appendChild(priceCta);
+        // If any existing .price-cta present anywhere inside card, reuse it (and remove duplicates)
+        var existingPriceCtas = card.querySelectorAll('.price-cta');
+        var priceCta = null;
+        if (existingPriceCtas && existingPriceCtas.length) {
+            // keep first one, remove extras
+            priceCta = existingPriceCtas[0];
+            for (var i = 1; i < existingPriceCtas.length; i++) {
+                try { existingPriceCtas[i].parentNode.removeChild(existingPriceCtas[i]); } catch (e) {}
+            }
+        }
 
-        // Connect buttons -> navigate to room detail / book
-        var onclick = card.getAttribute('onclick') || '';
-        var match = onclick.match(/room-detail\.html\?id=(\d+)/);
-        var roomId = match ? match[1] : null;
+        // ensure .gia-phong exists (may be in tieu-de-phong)
+        var priceNode = card.querySelector('.gia-phong') || card.querySelector('.gia-chinh');
 
-        btnDetail.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (roomId) window.location.href = 'room-detail.html?id=' + roomId;
-            else {
-                var a = card.querySelector('a');
-                if (a && a.href) window.location.href = a.href;
-                else card.click();
+        if (!priceCta) {
+            // create new price-cta and attach price + buttons
+            priceCta = document.createElement('div');
+            priceCta.className = 'price-cta';
+
+            // move existing price node into priceCta if exists
+            if (priceNode) {
+                priceCta.appendChild(priceNode);
+            } else {
+                var p = document.createElement('div');
+                p.className = 'gia-phong';
+                p.textContent = '';
+                priceCta.appendChild(p);
+            }
+
+            // create buttons and append
+            var btns = createBtnGroup(roomId, card);
+            priceCta.appendChild(btns);
+        } else {
+            // priceCta exists; ensure it contains a .gia-phong and a .btns-cta
+            var existingPrice = priceCta.querySelector('.gia-phong') || priceCta.querySelector('.gia-chinh');
+            if (!existingPrice && priceNode) {
+                priceCta.insertBefore(priceNode, priceCta.firstChild);
+            }
+            var existingBtns = priceCta.querySelector('.btns-cta');
+            if (!existingBtns) {
+                var newBtns = createBtnGroup(roomId, card);
+                priceCta.appendChild(newBtns);
+            } else {
+                // ensure event listeners attached (avoid double-attach): replace with fresh handlers
+                // remove old buttons and re-create to avoid duplicate listeners/styles
+                try {
+                    existingBtns.parentNode.removeChild(existingBtns);
+                } catch (e) {}
+                var freshBtns = createBtnGroup(roomId, card);
+                priceCta.appendChild(freshBtns);
+            }
+        }
+
+        // Move priceCta into phan (if it's not already a child)
+        if (priceCta.parentNode !== phan) {
+            phan.appendChild(priceCta);
+        }
+
+        // As a final cleanup: remove stray .btn elements inside phan that are not .btn-detail/.btn-book
+        var strayBtns = phan.querySelectorAll('button');
+        strayBtns.forEach(function(b) {
+            if (!b.classList.contains('btn-detail') && !b.classList.contains('btn-book') && !b.classList.contains('btns-cta')) {
+                // keep it only if needed, else remove
+                if (b.textContent && (b.textContent.trim() === 'Chi Tiết' || b.textContent.trim() === 'Đặt Ngay')) {
+                    // if text matches, convert its classes to our standard classes
+                    // but simpler: remove to avoid duplicates; the standard btns were already created
+                    b.parentNode.removeChild(b);
+                } else {
+                    // leave others alone
+                }
             }
         });
 
-        btnBook.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (roomId) window.location.href = 'room-detail.html?id=' + roomId + '&action=book';
-            else card.click();
-        });
+        // Mark processed
+        card.dataset.enhanced = '1';
     }
 
     function observeResults() {
         var container = document.getElementById('searchResultsContainer') || document.querySelector('.danh-sach-ket-qua') || document.querySelector('.noi-dung-ket-qua');
         if (!container) return;
 
-        // Process existing cards
+        // process existing
         var cards = container.querySelectorAll('.the-phong');
         cards.forEach(enhanceCard);
 
-        // Observe new cards (ajax / pagination)
+        // observe new cards
         var mo = new MutationObserver(function(muts) {
             muts.forEach(function(m) {
                 if (m.addedNodes && m.addedNodes.length) {
@@ -642,18 +703,6 @@ function displayResults(rooms) {
         img.alt = room.name || '';
         img.onerror = function() { this.src = '../img/khachsan1(1).jpg'; };
         anhWrap.appendChild(img);
-        
-        // Badge giảm giá
-        const badge = document.createElement('span');
-        badge.className = 'badge-giam-gia';
-        badge.textContent = '-20%';
-        anhWrap.appendChild(badge);
-        
-        // Số ảnh overlay
-        const soAnh = document.createElement('div');
-        soAnh.className = 'so-anh-overlay';
-        soAnh.textContent = '4 ảnh';
-        anhWrap.appendChild(soAnh);
 
         // Nội dung bên phải
         const noiDung = document.createElement('div');

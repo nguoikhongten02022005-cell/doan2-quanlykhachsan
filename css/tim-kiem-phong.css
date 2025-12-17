@@ -1328,3 +1328,41 @@
 }
 
 /* Cải thiện layout tieu-de-phong - đã được định nghĩa ở trên */
+
+/* ===== Đảm bảo style nút tìm kiếm đồng bộ ===== */
+.noi-dung-ket-qua .the-phong .btn-detail,
+.noi-dung-ket-qua .the-phong .btn-book {
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
+}
+
+/* outline detail */
+.noi-dung-ket-qua .the-phong .btn-detail {
+  background: #fff !important;
+  color: #2563eb !important;
+  border: 1px solid #d1d5db !important;
+}
+
+/* gradient book */
+.noi-dung-ket-qua .the-phong .btn-book {
+  background: linear-gradient(90deg,#7c3aed,#2563eb) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 8px 18px rgba(37,99,235,0.16) !important;
+}
+
+/* Giữ khoảng cách, tránh hiển thị 2 hàng */
+.noi-dung-ket-qua .the-phong .btns-cta {
+  display:flex !important;
+  gap:10px !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+}
+
+/* Ẩn những button thừa (nếu có style .btn chung gây xung đột), nhưng chỉ trong .phan-duoi */
+.noi-dung-ket-qua .the-phong .phan-duoi button:not(.btn-detail):not(.btn-book) {
+  display: none !important;
+}
