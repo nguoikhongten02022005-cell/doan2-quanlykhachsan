@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tìm Kiếm Sản Phẩm - QuickStay</title>
+
+    <!-- Dùng chung font, icon và css chính -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/index.css?v=2025">
+    <link rel="stylesheet" href="../css/tim-kiem-san-pham.css">
+</head>
+<body>
+    <!-- Gọi lại header giống các trang khác (giữ đồng nhất) -->
+    <header class="dau-trang">
+        <!-- Nav giống như tim-kiem-phong.html -->
+        <nav class="thanh-dieu-huong">
+            <div class="hop-dieu-huong">
+                <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer">
+                    <i class="fas fa-bed"></i><span>QuickStay</span>
+                </div>
+                <ul class="menu-dieu-huong">
+                    <li><a href="index.html">Trang chủ</a></li>
+                    <li><a href="thongtindatphong.html">Thông tin đặt phòng</a></li>
+                    <li><a href="gioithieu.html">Giới thiệu</a></li>
+                </ul>
+                <div class="hanh-dong-dieu-huong">
+                    <button class="nut-dang-nhap" id="nutDangNhap" onclick="window.location.href='login.html'">Đăng Nhập</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Thanh tìm kiếm sản phẩm -->
+    <div class="thanh-tim-kiem-chinh">
+        <div class="hop-chua-thanh-tim-kiem">
+            <div class="form-tim-kiem-chinh product-search-form">
+                <div class="truong" id="fieldKeyword">
+                    <i class="fas fa-search bieu-tuong"></i>
+                    <div class="noi-dung-truong">
+                        <input id="inputKeyword" class="field-input" type="text" placeholder="Tìm sản phẩm, thương hiệu..." />
+                    </div>
+                </div>
+
+                <div class="truong" style="max-width:200px;">
+                    <i class="fas fa-list bieu-tuong"></i>
+                    <div class="noi-dung-truong">
+                        <select id="selectCategory" class="field-input">
+                            <option value="">Tất cả danh mục</option>
+                            <option value="electronics">Điện tử</option>
+                            <option value="home">Nhà cửa</option>
+                            <option value="beauty">Làm đẹp</option>
+                            <option value="fashion">Thời trang</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="truong" style="max-width:230px;">
+                    <i class="fas fa-wallet bieu-tuong"></i>
+                    <div class="noi-dung-truong">
+                        <input id="priceMin" class="field-input" type="number" placeholder="Giá từ (đ)" min="0" />
+                        <span style="margin:0 8px;color:#666;"> - </span>
+                        <input id="priceMax" class="field-input" type="number" placeholder="đến (đ)" min="0" />
+                    </div>
+                </div>
+
+                <div class="truong" style="max-width:180px;">
+                    <i class="fas fa-sort bieu-tuong"></i>
+                    <div class="noi-dung-truong">
+                        <select id="selectSort" class="field-input">
+                            <option value="relevance">Phù hợp nhất</option>
+                            <option value="price-low">Giá: thấp → cao</option>
+                            <option value="price-high">Giá: cao → thấp</option>
+                            <option value="rating">Đánh giá</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;">
+                    <button id="btnSearchProduct" class="nut-tim-kiem-chinh" style="min-width:120px;">Tìm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="noi-dung-chinh">
+        <div class="hop-chua-tim-kiem">
+            <div class="noi-dung-ket-qua" id="productResultsBlock" style="display:none;">
+                <div class="header-ket-qua">
+                    <h1><span id="productCount">0</span> sản phẩm được tìm thấy</h1>
+                    <div class="thanh-dieu-khien">
+                        <div class="chuyen-doi-xem">
+                            <button class="nut-xem active" data-view="grid">Lưới</button>
+                            <button class="nut-xem" data-view="list">Danh sách</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="productResultsContainer" class="danh-sach-ket-qua grid-view luoi-phong">
+                    <!-- Kết quả sẽ được render ở đây -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="chan-trang">
+        <!-- Footer giống như trang khác -->
+        <div class="hop-chan-trang">
+            <div class="khu-chan-trang">
+                <div class="logo-chan-trang"><i class="fas fa-bed"></i><span>QuickStay</span></div>
+                <p class="mo-ta-chan-trang">Dịch vụ đặt phòng & mua sắm — Sản phẩm & trải nghiệm tốt nhất.</p>
+            </div>
+            <!-- ... -->
+        </div>
+    </footer>
+
+    <!-- Script -->
+    <script src="../js/storageService.js?v=2025"></script>
+    <script src="../js/common.js?v=2025"></script>
+    <script src="../js/tim-kiem-san-pham.js?v=2025"></script>
+</body>
+</html>
