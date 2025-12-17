@@ -308,113 +308,179 @@ function chonNgayTim(date) {
     return date;
 }
 
+function loadSearchDataFromURL() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var checkinStr = params.get('checkin');
+    var checkoutStr = params.get('checkout');
+    var adults = parseInt(params.get('adults') || '1', 10) || 1;
+    var children = parseInt(params.get('children') || '0', 10) || 0;
+    var roomsCount = parseInt(params.get('rooms') || '1', 10) || 1;
+
+    // chọn hàm parse ngày nếu có
+    var parseFn = null;
+    if (typeof _toMidnightDate === 'function') parseFn = _toMidnightDate;
+    else if (typeof parseDateYYYYMMDD === 'function') parseFn = function(s){ return (s ? parseDateYYYYMMDD(s) : null); };
+    else parseFn = function(s){ return s ? new Date(s) : null; };
+
+    var cin = parseFn(checkinStr);
+    var cout = parseFn(checkoutStr);
+
+    // nếu thiếu checkout thì mặc định = ngày tiếp theo
+    if (!cin) {
+      // fallback: hôm nay
+      cin = new Date();
+      cin.setHours(0,0,0,0);
+    }
+    if (!cout || !(cout instanceof Date) || isNaN(cout.getTime())) {
+      cout = new Date(cin.getFullYear(), cin.getMonth(), cin.getDate() + 1);
+      cout.setHours(0,0,0,0);
+    }
+
+    // cập nhật globals (nếu trang dùng chúng)
+    if (typeof nhanPhongTim !== 'undefined') nhanPhongTim = new Date(cin);
+    if (typeof traPhongTim !== 'undefined') traPhongTim = new Date(cout);
+
+    // cập nhật hiển thị người/khách (nếu có element tương ứng)
+    var hienThiKhach = document.getElementById('hienThiKhachTim') || document.querySelector('.hienThiKhach');
+    if (hienThiKhach) {
+      hienThiKhach.textContent = adults + ' người lớn · ' + children + ' trẻ em · ' + roomsCount + ' phòng';
+    }
+    var hienThiNgay = document.getElementById('hienThiNgayTim');
+    if (hienThiNgay && typeof formatDate === 'function') {
+      hienThiNgay.textContent = formatDate(cin) + ' - ' + formatDate(cout);
+    }
+
+    console.log('loadSearchDataFromURL ->', { checkinStr, checkoutStr, cin, cout, adults, children, roomsCount });
+
+    if (typeof performSearch === 'function') {
+      performSearch(cin, cout, adults, children);
+    } else {
+      console.error('performSearch chưa được định nghĩa khi gọi loadSearchDataFromURL');
+    }
+  } catch (e) {
+    console.error('Lỗi loadSearchDataFromURL:', e);
+  }
+}
+
 function performSearch(checkin, checkout, adults, children) {
-    // Load rooms, nếu không có thì cố gắng seed nếu storageService hỗ trợ
-    var rooms = [];
     try {
-        rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
-    } catch (e) {
-        console.warn('Không parse rooms từ localStorage:', e);
-        rooms = [];
-    }
-    if ((!rooms || rooms.length === 0) && window.storageService && typeof storageService.ensureRoomsSeeded === 'function') {
-        try {
-            storageService.ensureRoomsSeeded();
-            rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
-        } catch (e) { /* ignore */ }
-    }
+        // đảm bảo inputs là Date ở midnight
+        var searchStart = (typeof _toMidnightDate === 'function') ? _toMidnightDate(checkin) : (checkin ? new Date(new Date(checkin).getFullYear(), new Date(checkin).getMonth(), new Date(checkin).getDate()) : null);
+        var searchEnd = (typeof _toMidnightDate === 'function') ? _toMidnightDate(checkout) : (checkout ? new Date(new Date(checkout).getFullYear(), new Date(checkout).getMonth(), new Date(checkout).getDate()) : null);
 
-    var bookings = [];
-    try {
-        bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    } catch (e) {
-        console.warn('Không parse bookings từ localStorage:', e);
-        bookings = [];
-    }
+        console.log('performSearch called', { searchStart, searchEnd, adults, children });
 
-    var searchStart = _toMidnightDate(checkin);
-    var searchEnd = _toMidnightDate(checkout);
-
-    console.log('performSearch called', { checkin: checkin, checkout: checkout, searchStart: searchStart, searchEnd: searchEnd, adults: adults, children: children, roomsCount: rooms.length, bookingsCount: bookings.length });
-
-    var container = document.getElementById('searchResultsContainer');
-    if (!container) {
-        console.error('searchResultsContainer không tìm thấy trên DOM');
-        return;
-    }
-
-    if (!searchStart || !searchEnd || searchStart >= searchEnd) {
-        container.innerHTML = `
-            <div class="thong-bao-khong-tim-thay">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h3>Ngày không hợp lệ</h3>
-                <p>Ngày trả phòng phải sau ngày nhận phòng.</p>
-                <a href="index.html" class="nut-xem-tinh-trang">Quay lại trang chủ</a>
-            </div>`;
-        return;
-    }
-
-    var availableRooms = rooms.filter(function(room) {
-        try {
-            if (!room || room.status !== 'available') return false;
-
-            var cap = { adults: 2, children: 0 };
-            if (typeof parseCapacity === 'function') {
-                cap = parseCapacity(room);
-            } else if (room.capacity) {
-                var ma = String(room.capacity).match(/(\d+)\s*người lớn/i);
-                var mc = String(room.capacity).match(/(\d+)\s*trẻ em/i);
-                if (ma) cap.adults = parseInt(ma[1]);
-                if (mc) cap.children = parseInt(mc[1]);
-            }
-
-            if (adults > cap.adults) return false;
-            if (children > cap.children) {
-                var tot = cap.adults + cap.children;
-                var gtot = adults + children;
-                if (gtot > tot) return false;
-            }
-
-            // Kiểm tra booking chồng lấp cho khoảng tìm kiếm
-            if (!isRoomAvailableForPeriod(room.id, searchStart, searchEnd)) return false;
-
-            return true;
-        } catch (err) {
-            console.error('Lỗi khi lọc room', room && room.id, err);
-            return false;
+        var container = document.getElementById('searchResultsContainer');
+        var resultsBlock = document.getElementById('noiDungKetQua'); // block chứa header + results
+        if (!container) {
+            console.error('searchResultsContainer không tìm thấy.');
+            return;
         }
-    });
 
-    console.log('availableRooms count =', availableRooms.length);
+        // validate ngày
+        if (!searchStart || !searchEnd || searchStart >= searchEnd) {
+            if (resultsBlock) resultsBlock.style.display = 'none';
+            container.innerHTML = '<div class="thong-bao-khong-tim-thay"><i class="fas fa-exclamation-triangle"></i><h3>Ngày không hợp lệ</h3><p>Ngày trả phòng phải sau ngày nhận phòng.</p></div>';
+            return;
+        }
 
-    if (!availableRooms || availableRooms.length === 0) {
-        container.innerHTML = `
-            <div class="thong-bao-khong-tim-thay">
-                <i class="fas fa-search"></i>
-                <h3>Không có phòng phù hợp</h3>
-                <p>Không tìm thấy phòng trống cho khoảng thời gian và số lượng khách bạn chọn.</p>
-                <a href="index.html" class="nut-xem-tinh-trang">Quay lại trang chủ</a>
-            </div>`;
-        return;
+        // load rooms/bookings an toàn
+        var rooms = [];
+        var bookings = [];
+        try { rooms = JSON.parse(localStorage.getItem('rooms') || '[]'); } catch(e){ rooms = []; console.warn('parse rooms error', e); }
+        try { bookings = JSON.parse(localStorage.getItem('bookings') || '[]'); } catch(e){ bookings = []; console.warn('parse bookings error', e); }
+
+        // nếu không có rooms, thử seed (nếu storageService hỗ trợ)
+        if ((!rooms || rooms.length === 0) && window.storageService && typeof storageService.ensureRoomsSeeded === 'function') {
+            try {
+                storageService.ensureRoomsSeeded();
+                rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+            } catch(e){ console.warn('Không seed được rooms tự động', e); }
+        }
+
+        var availableRooms = rooms.filter(function(room) {
+            try {
+                if (!room) return false;
+                if (room.status && room.status !== 'available') return false;
+
+                // capacity
+                var cap = { adults: 2, children: 0 };
+                if (typeof parseCapacity === 'function') cap = parseCapacity(room);
+                else if (room.capacity) {
+                    var ma = String(room.capacity).match(/(\d+)\s*người lớn/i);
+                    var mc = String(room.capacity).match(/(\d+)\s*trẻ em/i);
+                    if (ma) cap.adults = parseInt(ma[1]);
+                    if (mc) cap.children = parseInt(mc[1]);
+                }
+
+                if ((adults || 0) > (cap.adults || 0)) return false;
+                if ((children || 0) > (cap.children || 0)) {
+                    var tot = (cap.adults || 0) + (cap.children || 0);
+                    var gtot = (adults || 0) + (children || 0);
+                    if (gtot > tot) return false;
+                }
+
+                // kiểm tra booking overlap (bỏ qua cancelled)
+                for (var i = 0; i < bookings.length; i++) {
+                    var b = bookings[i];
+                    if (!b) continue;
+                    if (String(b.roomId) !== String(room.id)) continue;
+                    var st = (b.status||'').toLowerCase();
+                    if (st === 'cancelled' || st === 'canceled') continue;
+                    var bs = (typeof _toMidnightDate === 'function') ? _toMidnightDate(b.checkIn || b.checkin) : (b.checkIn ? new Date(b.checkIn) : (b.checkin ? new Date(b.checkin) : null));
+                    var be = (typeof _toMidnightDate === 'function') ? _toMidnightDate(b.checkOut || b.checkout) : (b.checkOut ? new Date(b.checkOut) : (b.checkout ? new Date(b.checkout) : null));
+                    if (!bs || !be) continue;
+                    // overlap condition (half-open interval)
+                    if (searchStart < be && searchEnd > bs) {
+                        return false;
+                    }
+                }
+
+                return true;
+            } catch (err) {
+                console.error('Lỗi khi lọc phòng', room && room.id, err);
+                return false;
+            }
+        });
+
+        console.log('availableRooms count =', availableRooms.length);
+
+        // Hiển thị/nẨn khối kết quả
+        if (resultsBlock) resultsBlock.style.display = (availableRooms && availableRooms.length > 0) ? 'block' : 'none';
+
+        if (!availableRooms || availableRooms.length === 0) {
+            container.innerHTML = '<div class="thong-bao-khong-tim-thay"><i class="fas fa-search"></i><h3>Không có phòng phù hợp</h3><p>Không tìm thấy phòng trống cho khoảng thời gian và số lượng khách bạn chọn.</p></div>';
+            // cập nhật số lượng 0
+            var s = document.getElementById('soLuongKetQua');
+            if (s) s.textContent = '0';
+            return;
+        }
+
+        // cập nhật số lượng
+        var s = document.getElementById('soLuongKetQua');
+        if (s) s.textContent = String(availableRooms.length);
+
+        // render kết quả (sử dụng escapeHtml để tránh XSS nếu dữ liệu không an toàn)
+        var html = '';
+        for (var j = 0; j < availableRooms.length; j++) {
+            var r = availableRooms[j];
+            var name = escapeHtml(r.name || '');
+            var img = escapeHtml(r.image || '');
+            var price = (typeof formatPrice === 'function') ? formatPrice(r.price || 0) : (r.price || 0);
+            html += '<div class="the-phong-tim-kiem" data-room-id="' + escapeHtml(String(r.id || '')) + '">';
+            html += '  <div class="anh-phong-tim"><img src="' + img + '" alt="' + name + '"></div>';
+            html += '  <div class="noi-dung-phong">';
+            html += '    <h3 class="ten-phong-tim-kiem">' + name + '</h3>';
+            html += '    <div class="thong-tin-con"><span class="gia">' + price + '</span></div>';
+            html += '  </div>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+
+    } catch (ex) {
+        console.error('performSearch lỗi:', ex);
     }
-
-    // Render kết quả (bạn có thể thay mẫu HTML này bằng template cũ nếu cần)
-    var html = '';
-    for (var i = 0; i < availableRooms.length; i++) {
-        var r = availableRooms[i];
-        html += `
-            <div class="the-phong-tim-kiem" data-room-id="${r.id}">
-                <div class="anh-phong-tim"><img src="${r.image || ''}" alt="${(r.name||'')}"></div>
-                <div class="noi-dung-phong">
-                    <h3 class="ten-phong-tim-kiem">${(r.name||'')}</h3>
-                    <div class="thong-tin-con"><span class="gia">${formatPrice(r.price || 0)}</span></div>
-                </div>
-            </div>
-        `;
-    }
-    container.innerHTML = html;
-
-    // (Nếu trước đây bạn gắn event lên .the-phong-tim-kiem, hãy gắn lại ở đây)
 }
 
 function displayResults(rooms) {
