@@ -37,15 +37,19 @@ function getNumericPrice(b) {
     return isNaN(n) ? 0 : n;
 }
 
+// Helper: kiểm tra booking có trong giỏ hàng (pending + Chưa thanh toán)
+function isCartBooking(b) {
+    var status = (b.status || 'pending').toLowerCase();
+    var pm = (b.paymentMethod || 'Chưa thanh toán');
+    return status === 'pending' && pm === 'Chưa thanh toán';
+}
+
 // khoiTaoMenuDiDong đã được chuyển sang common.js
 
 function taiDuLieuGioHang() {
     var allBookings = storageService.getBookings();
-    // Chỉ lấy các booking chưa thanh toán (status = 'pending' hoặc không có status)
-    var bookings = allBookings.filter(function(booking) {
-        var status = booking.status || 'pending';
-        return status === 'pending';
-    });
+    // Chỉ lấy các booking trong giỏ hàng (pending + Chưa thanh toán)
+    var bookings = allBookings.filter(isCartBooking);
     
     var container = document.getElementById('danhSachPhong');
     
@@ -245,82 +249,173 @@ function thucHienThanhToan() {
 }
 
 function luuThongTinDatPhong(finalize = false) {
-    // Lấy tất cả booking hiện có
-    var allBookings = [];
+  // finalize: true = user đã bấm thanh toán/đặt phòng (thành công),
+  // nhưng trạng thái đơn vẫn là 'pending' (Chờ xác nhận)
+
+  var allBookings = [];
+  try {
+    allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+  } catch (e) {
+    allBookings = [];
+  }
+
+  // CHỈ lấy booking trong giỏ hàng (pending + Chưa thanh toán)
+  var bookings = allBookings.filter(isCartBooking);
+
+  var hoTen = document.getElementById('hoTen').value.trim();
+  var email = document.getElementById('email').value.trim();
+  var soDienThoai = document.getElementById('soDienThoai').value.trim();
+  var cmnd = document.getElementById('cmnd').value.trim();
+  var ghiChu = document.getElementById('ghiChu').value.trim();
+  var phuongThuc = (document.querySelector('input[name="phuongThuc"]:checked') || {}).value || 'ngan-hang';
+
+  // Lấy thông tin user hiện tại nếu có
+  var currentUser = localStorage.getItem('currentUser');
+  var userId = null;
+  if (currentUser) {
     try {
-        allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    } catch(e) {
-        allBookings = [];
+      var userInfo = JSON.parse(currentUser);
+      userId = userInfo.id || userInfo.username;
+    } catch (e) {}
+  }
+
+  // Helper đọc tiền từ UI (đã format)
+  function getMoneyFromEl(id) {
+    var el = document.getElementById(id);
+    if (!el) return 0;
+    var txt = (el.textContent || '').replace(/[^\d.-]/g, '');
+    var n = Number(txt);
+    return isNaN(n) ? 0 : n;
+  }
+
+  // Tổng tiền theo UI (đã tính phí + VAT + giảm giá)
+  var tongCongUI = getMoneyFromEl('tongCong');
+  var phiDichVuUI = getMoneyFromEl('phiDichVu');
+  var thueVATUI = getMoneyFromEl('thueVAT');
+  var tienGiamGiaUI = getMoneyFromEl('tienGiamGia');
+
+  // Tính base từng booking để chia tỷ lệ
+  var bases = [];
+  var baseSum = 0;
+
+  for (var i = 0; i < bookings.length; i++) {
+    var b0 = bookings[i];
+
+    // nights
+    var checkInDate = b0.checkIn || b0.checkin;
+    var checkOutDate = b0.checkOut || b0.checkout;
+    var soDem = Number(b0.nights) || 0;
+
+    if (!soDem) {
+      var ci = new Date(checkInDate || '2025-01-01');
+      var co = new Date(checkOutDate || '2025-01-02');
+      if (isNaN(ci.getTime())) ci = new Date('2025-01-01');
+      if (isNaN(co.getTime())) co = new Date('2025-01-02');
+      soDem = Math.ceil((co - ci) / (1000 * 60 * 60 * 24));
+      if (soDem <= 0) soDem = 1;
     }
 
-    // Lấy các booking đang ở trạng thái pending (những booking trong giỏ)
-    var bookings = allBookings.filter(function(booking) {
-        var status = (booking.status || 'pending').toLowerCase();
-        return status === 'pending';
-    });
+    var pricePerNight = Number(b0.price) || 0;
+    var base = Number(b0.totalAmount) || (pricePerNight * soDem);
+    if (!base || base < 0) base = 0;
 
-    var hoTen = document.getElementById('hoTen').value.trim();
-    var email = document.getElementById('email').value.trim();
-    var soDienThoai = document.getElementById('soDienThoai').value.trim();
-    var cmnd = document.getElementById('cmnd').value.trim();
-    var ghiChu = document.getElementById('ghiChu').value.trim();
-    var phuongThuc = (document.querySelector('input[name="phuongThuc"]:checked') || {}).value || 'ngan-hang';
+    bases.push(base);
+    baseSum += base;
+  }
+  if (baseSum <= 0) baseSum = 1;
 
-    // Lấy thông tin user hiện tại nếu có
-    var currentUser = localStorage.getItem('currentUser');
-    var userId = null;
-    if (currentUser) {
-        try {
-            var userInfo = JSON.parse(currentUser);
-            userId = userInfo.id || userInfo.username;
-        } catch (e) {}
+  // Nếu UI chưa có tongCong (trường hợp lỗi hiếm), fallback tự tính
+  if (!tongCongUI) {
+    tongCongUI = baseSum + phiDichVuUI + thueVATUI - tienGiamGiaUI;
+  }
+
+  // Chia phí/VAT/giảm giá theo tỷ lệ base, fix làm tròn bằng cách dồn phần dư cho item cuối
+  var assignedTotal = 0;
+  var assignedFee = 0;
+  var assignedVat = 0;
+  var assignedDiscount = 0;
+
+  for (var j = 0; j < bookings.length; j++) {
+    var b = bookings[j];
+    var share = bases[j] / baseSum;
+
+    var fee = (j === bookings.length - 1) ? (phiDichVuUI - assignedFee) : Math.round(phiDichVuUI * share);
+    var vat = (j === bookings.length - 1) ? (thueVATUI - assignedVat) : Math.round(thueVATUI * share);
+    var discount = (j === bookings.length - 1) ? (tienGiamGiaUI - assignedDiscount) : Math.round(tienGiamGiaUI * share);
+
+    assignedFee += fee;
+    assignedVat += vat;
+    assignedDiscount += discount;
+
+    var total = bases[j] + fee + vat - discount;
+
+    // Dồn sai số làm tròn vào dòng cuối để tổng khớp UI
+    if (j === bookings.length - 1) {
+      total = tongCongUI - assignedTotal;
+    } else {
+      assignedTotal += total;
     }
 
-    // Cập nhật các booking pending với thông tin khách hàng và trạng thái
-    for (var i = 0; i < bookings.length; i++) {
-        var b = bookings[i];
-
-        if (userId && !b.userId) {
-            b.userId = userId;
-            b.customerId = userId;
-        }
-
-        b.customerInfo = {
-            hoTen: hoTen,
-            email: email,
-            soDienThoai: soDienThoai,
-            cmnd: cmnd,
-            ghiChu: ghiChu,
-            phuongThuc: phuongThuc
-        };
-        b.customer = hoTen;
-        b.email = email;
-        b.phone = soDienThoai;
-        b.paymentDate = new Date().toISOString();
-
-        if (finalize) {
-            b.status = 'confirmed';
-        } else {
-            b.status = 'pending';
-        }
-
-        if (phuongThuc === 'tien-mat') b.paymentMethod = 'Tiền mặt';
-        else if (phuongThuc === 'ngan-hang') b.paymentMethod = 'Chuyển khoản';
-        else if (phuongThuc === 'vnpay') b.paymentMethod = 'VNPay';
-        else b.paymentMethod = phuongThuc;
+    // gán userId (đơn đã tạo)
+    if (userId && !b.userId) {
+      b.userId = userId;
+      b.customerId = userId;
     }
 
-    // Lưu toàn bộ allBookings (vì bookings là reference tới các phần tử trong allBookings,
-    // việc sửa bookings[i] cũng sửa allBookings). Ghi lại vào localStorage.
-    try {
-        localStorage.setItem('bookings', JSON.stringify(allBookings));
-    } catch (e) {
-        console.error('Không thể lưu bookings lên localStorage:', e);
+    b.customerInfo = {
+      hoTen: hoTen,
+      email: email,
+      soDienThoai: soDienThoai,
+      cmnd: cmnd,
+      ghiChu: ghiChu,
+      phuongThuc: phuongThuc
+    };
+    b.customer = hoTen;
+    b.email = email;
+    b.phone = soDienThoai;
+
+    // Trạng thái: CHỜ XÁC NHẬN (không confirmed tự động)
+    b.status = 'pending';
+
+    // Payment method
+    if (phuongThuc === 'tien-mat') b.paymentMethod = 'Tiền mặt';
+    else if (phuongThuc === 'ngan-hang') b.paymentMethod = 'Chuyển khoản';
+    else if (phuongThuc === 'vnpay') b.paymentMethod = 'VNPay';
+    else b.paymentMethod = phuongThuc;
+
+    // Lưu breakdown để sau này xem chi tiết (không bắt buộc nhưng rất hữu ích)
+    b.pricing = {
+      base: bases[j],
+      serviceFee: fee,
+      vat: vat,
+      discount: discount,
+      promoCode: maGiamGiaDangApDung ? maGiamGiaDangApDung.code : null
+    };
+
+    // QUAN TRỌNG: tổng tiền hiển thị = tổng sau giảm
+    b.totalAmount = total;
+    if (typeof formatPrice === 'function') {
+      b.total = formatPrice(total);
+    } else {
+      b.total = String(total);
     }
 
-    // Sau khi lưu, cập nhật giao diện / chuyển hướng hoặc gọi lại hàm tìm kiếm nếu cần
-    // Ví dụ: nếu đang ở trang thanh toán, có thể chuyển đến trang hoàn tất
-    // hoặc nếu cần refresh trang tìm kiếm hiện tại thì gọi lại loadSearchDataFromURL() hoặc performSearch()
+    // ghi thời điểm đặt/thanh toán
+    if (finalize) {
+      b.paymentDate = new Date().toISOString();
+    }
+  }
+
+  // Chỉ tăng usedCount mã giảm giá khi finalize thành công
+  if (finalize && maGiamGiaDangApDung && maGiamGiaDangApDung.code) {
+    capNhatSoLuongMaGiamGia(maGiamGiaDangApDung.code);
+  }
+
+  try {
+    localStorage.setItem('bookings', JSON.stringify(allBookings));
+  } catch (e) {
+    console.error('Không thể lưu bookings lên localStorage:', e);
+  }
 }
 
 function capNhatSoLuongMaGiamGia(code) {
@@ -492,16 +587,16 @@ function apDungMaGiamGia() {
     // Áp dụng mã giảm giá
     maGiamGiaDangApDung = promotion;
     
-    // Cập nhật số lượng đã sử dụng trong localStorage
-    for (var j = 0; j < promotions.length; j++) {
-        if (promotions[j].id === promotion.id) {
-            promotions[j].usedCount = (parseInt(promotions[j].usedCount) || 0) + 1;
-            // Giảm maxUses đi 1 để hiển thị số lượng còn lại
-            promotions[j].maxUses = Math.max(0, (parseInt(promotions[j].maxUses) || 0) - 1);
-            break;
-        }
-    }
-    localStorage.setItem('promotions', JSON.stringify(promotions));
+    // KHÔNG trừ lượt mã ngay khi nhập - chỉ trừ khi thanh toán thành công (trong luuThongTinDatPhong)
+    // (Đã comment: cập nhật số lượng đã sử dụng trong localStorage)
+    // for (var j = 0; j < promotions.length; j++) {
+    //     if (promotions[j].id === promotion.id) {
+    //         promotions[j].usedCount = (parseInt(promotions[j].usedCount) || 0) + 1;
+    //         promotions[j].maxUses = Math.max(0, (parseInt(promotions[j].maxUses) || 0) - 1);
+    //         break;
+    //     }
+    // }
+    // localStorage.setItem('promotions', JSON.stringify(promotions));
     
     // Tính tiền giảm
     var tienGiam = tinhTienGiamGia(tongTienSauPhi, promotion);

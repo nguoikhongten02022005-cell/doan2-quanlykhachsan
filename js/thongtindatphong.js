@@ -1,5 +1,12 @@
 // JavaScript cho trang giỏ hàng
 
+// Helper: kiểm tra booking có trong giỏ hàng (pending + Chưa thanh toán)
+function isCartBooking(b) {
+    var status = (b.status || 'pending').toLowerCase();
+    var pm = (b.paymentMethod || 'Chưa thanh toán');
+    return status === 'pending' && pm === 'Chưa thanh toán';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Kiểm tra trạng thái đăng nhập và cập nhật UI
     if (typeof checkLoginStatus === 'function') {
@@ -25,11 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function taiDanhSachPhongGio() {
     var allBookings = storageService.getBookings();
-    // Chỉ lấy các booking chưa thanh toán (status = 'pending' hoặc không có status)
-    var bookings = allBookings.filter(function(booking) {
-        var status = booking.status || 'pending';
-        return status === 'pending';
-    });
+    // Chỉ lấy các booking trong giỏ hàng (pending + Chưa thanh toán)
+    var bookings = allBookings.filter(isCartBooking);
     
     var container = document.getElementById('danhSachPhongGio');
     
@@ -159,11 +163,8 @@ function taoThePhongGio(booking, index) {
 
 function capNhatTomTatDonHang() {
     var allBookings = storageService.getBookings();
-    // Chỉ tính các booking chưa thanh toán (status = 'pending' hoặc không có status)
-    var bookings = allBookings.filter(function(booking) {
-        var status = booking.status || 'pending';
-        return status === 'pending';
-    });
+    // Chỉ tính các booking trong giỏ hàng (pending + Chưa thanh toán)
+    var bookings = allBookings.filter(isCartBooking);
     
     var tongSoPhong = bookings.length;
     var tongSoDem = 0;
@@ -213,11 +214,8 @@ function suaPhong(index) {
 function xoaPhong(index) {
     if (confirm('Bạn có chắc muốn xóa phòng này khỏi giỏ hàng?')) {
         var allBookings = storageService.getBookings();
-        // Lấy danh sách booking chưa thanh toán để tìm đúng index
-        var pendingBookings = allBookings.filter(function(booking) {
-            var status = booking.status || 'pending';
-            return status === 'pending';
-        });
+        // Lấy danh sách booking trong giỏ hàng để tìm đúng index
+        var pendingBookings = allBookings.filter(isCartBooking);
         
         if (index >= 0 && index < pendingBookings.length) {
             // Tìm booking tương ứng trong allBookings và xóa
@@ -324,11 +322,8 @@ document.getElementById('nutThanhToan').addEventListener('click', function() {
     }
 
     var allBookings = storageService.getBookings();
-    // Chỉ kiểm tra các booking chưa thanh toán
-    var bookings = allBookings.filter(function(booking) {
-        var status = booking.status || 'pending';
-        return status === 'pending';
-    });
+    // Chỉ kiểm tra các booking trong giỏ hàng (pending + Chưa thanh toán)
+    var bookings = allBookings.filter(isCartBooking);
     
     if (bookings.length === 0) {
         alert('Giỏ hàng trống!');

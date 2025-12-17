@@ -1,4 +1,4 @@
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = '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';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 // Đổi model sang Nvidia Nemotron 3 Nano 30B (free)
 const MODEL = 'nvidia/nemotron-3-nano-30b-a3b:free';
@@ -6,10 +6,141 @@ const MODEL = 'nvidia/nemotron-3-nano-30b-a3b:free';
 let chatHistory = [];
 let isOpen = false;
 
+// ===== HÀM PHỤ =====
+const MAX_HISTORY_TURNS = 10;     // giới hạn lịch sử gửi lên model
+const MAX_ROOM_CONTEXT = 12;      // số phòng tối đa đưa vào prompt
+const MAX_AMENITIES_PER_ROOM = 8;
+
+function toInt(v, def = 0) {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : def;
+}
+
+function normalizeVN(str = '') {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getSearchContext() {
+  // Trang tìm kiếm của bạn có querystring ?checkin=...&checkout=...&adults=...&children=...&rooms=...
+  const p = new URLSearchParams(window.location.search);
+  const checkin = p.get('checkin') || '';
+  const checkout = p.get('checkout') || '';
+  const adults = toInt(p.get('adults'), 0);
+  const children = toInt(p.get('children'), 0);
+  const rooms = toInt(p.get('rooms'), 1);
+
+  // số đêm để tính tổng tiền (nếu parse được)
+  let nights = 0;
+  try {
+    if (checkin && checkout) {
+      const a = new Date(checkin);
+      const b = new Date(checkout);
+      const diff = Math.ceil((b - a) / (1000 * 60 * 60 * 24));
+      nights = Number.isFinite(diff) && diff > 0 ? diff : 0;
+    }
+  } catch (_) {}
+
+  return { checkin, checkout, adults, children, rooms, nights };
+}
+
+function safeParseCapacity(room) {
+  // ưu tiên dùng parseCapacity sẵn có trong project (đang được gọi ở buildSystemPrompt cũ)
+  if (typeof parseCapacity === 'function') return parseCapacity(room);
+
+  // fallback: thử đọc các field phổ biến
+  const adults = toInt(room.adults ?? room.maxAdults ?? room.capacityAdults, 0);
+  const children = toInt(room.children ?? room.maxChildren ?? room.capacityChildren, 0);
+  return { adults, children };
+}
+
+function parsePriceNumber(room) {
+  const raw = (room.price ?? '').toString();
+  const n = parseInt(raw.replace(/\D/g, ''), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function getAmenityList(room) {
+  const s = (room.amenities || '').toString();
+  if (!s) return [];
+  return s.split(',').map(x => x.trim()).filter(Boolean);
+}
+
+function roomSummary(room) {
+  const cap = safeParseCapacity(room);
+  const price = parsePriceNumber(room);
+  const amenities = getAmenityList(room).slice(0, MAX_AMENITIES_PER_ROOM);
+  return {
+    id: room.id ?? room.roomId ?? room._id ?? '',
+    name: room.name || '',
+    type: room.type || 'Standard',
+    price,
+    adults: cap.adults,
+    children: cap.children,
+    amenities
+  };
+}
+
+function scoreRoom(room, userMsgNorm, ctx) {
+  const name = normalizeVN(room.name || '');
+  const type = normalizeVN(room.type || '');
+  const amen = normalizeVN((room.amenities || '').toString());
+  let score = 0;
+
+  // match theo keyword
+  if (userMsgNorm && (name.includes(userMsgNorm) || type.includes(userMsgNorm))) score += 8;
+
+  // match theo từng từ
+  const tokens = userMsgNorm.split(' ').filter(Boolean);
+  for (const t of tokens) {
+    if (t.length < 3) continue;
+    if (name.includes(t)) score += 3;
+    if (type.includes(t)) score += 2;
+    if (amen.includes(t)) score += 2;
+  }
+
+  // ưu tiên phòng đủ sức chứa theo ngữ cảnh
+  const cap = safeParseCapacity(room);
+  if (ctx.adults || ctx.children) {
+    if (cap.adults >= ctx.adults && cap.children >= ctx.children) score += 6;
+    else score -= 6;
+  }
+
+  // nếu hỏi rẻ/giá tốt => ưu tiên giá thấp
+  if (userMsgNorm.includes('re') || userMsgNorm.includes('gia') || userMsgNorm.includes('khuyen mai')) {
+    const price = parsePriceNumber(room);
+    if (price > 0) score += Math.max(0, 5 - Math.floor(price / 1000000)); // giá thấp hơn thì điểm cao hơn
+  }
+
+  return score;
+}
+
+function pickRelevantRooms(rooms, userMessage, ctx) {
+  const msgNorm = normalizeVN(userMessage || '');
+  const list = rooms
+    .filter(r => (r.status || '').toLowerCase() === 'available') // giữ logic cũ
+    .map(r => ({ room: r, score: scoreRoom(r, msgNorm, ctx) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MAX_ROOM_CONTEXT)
+    .map(x => roomSummary(x.room));
+
+  return list;
+}
+
 // Hàm xây dựng system prompt từ dữ liệu thực tế
-function buildSystemPrompt() {
+function buildSystemPrompt(userMessage = '') {
     try {
         var rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+        
+        // Lấy ngữ cảnh tìm kiếm và phòng liên quan
+        var ctx = getSearchContext();
+        var relevantRooms = pickRelevantRooms(rooms, userMessage, ctx);
         
         // Nhóm phòng theo type và tính toán thông tin
         var roomsByType = {};
@@ -107,12 +238,29 @@ NHIỆM VỤ:
         }
         
         // Xây dựng prompt
-        var prompt = `Bạn là trợ lý AI của khách sạn QuickStay. Trả lời bằng tiếng Việt, ngắn gọn, thân thiện và chính xác.
+        var prompt = `Bạn là trợ lý AI của khách sạn QuickStay.
 
-THÔNG TIN KHÁCH SẠN:
-- Tên: QuickStay Hotel
-- Dịch vụ chính: Đặt phòng khách sạn trực tuyến
-- TỔNG SỐ PHÒNG CÓ SẴN: ${totalAvailableRooms} phòng
+QUY TẮC BẮT BUỘC:
+- Trả lời bằng tiếng Việt, thân thiện, đúng trọng tâm.
+- CHỈ dùng dữ liệu trong <DATA>. Nếu thiếu dữ liệu: nói "Hệ thống hiện chưa có thông tin đó" và hướng dẫn khách xem chi tiết/đặt trên website.
+- Khi tư vấn phòng: ưu tiên phòng phù hợp số người, nêu giá/đêm, tiện nghi chính, và đề xuất 2-3 lựa chọn.
+- Nếu khách hỏi tổng tiền: Tổng = (giá/đêm) * (số đêm) * (số phòng). Nếu thiếu ngày hoặc không tính được số đêm thì hỏi lại.
+
+<DATA>
+SEARCH_CONTEXT:
+- Check-in: ${ctx.checkin || 'chưa chọn'}
+- Check-out: ${ctx.checkout || 'chưa chọn'}
+- Số đêm: ${ctx.nights || 'chưa xác định'}
+- Khách: ${ctx.adults} người lớn, ${ctx.children} trẻ em
+- Số phòng: ${ctx.rooms}
+
+TỔNG SỐ PHÒNG CÓ SẴN: ${totalAvailableRooms} phòng
+
+TOP PHÒNG LIÊN QUAN (ưu tiên dùng để trả lời):
+${relevantRooms.map((r, i) => {
+  const priceText = r.price ? (typeof formatPrice === 'function' ? formatPrice(r.price) : (r.price.toLocaleString('vi-VN') + ' đ')) : 'chưa có giá';
+  return `${i+1}. ${r.name || ('Phòng ' + r.type)} | Loại: ${r.type} | Giá: ${priceText}/đêm | Sức chứa: ${r.adults} NL, ${r.children} TE | Tiện nghi: ${r.amenities.join(', ') || 'chưa có'}`;
+}).join('\n')}
 
 CÁC LOẠI PHÒNG VÀ GIÁ (theo đêm):\n`;
         
@@ -159,18 +307,16 @@ CÁC LOẠI PHÒNG VÀ GIÁ (theo đêm):\n`;
             typeIndex++;
         }
         
-        prompt += `NHIỆM VỤ:
-- Trả lời CHÍNH XÁC về số lượng phòng, giá phòng, loại phòng, tiện nghi dựa trên thông tin trên
+        prompt += `</DATA>
+
+NHIỆM VỤ:
+- Trả lời chính xác theo dữ liệu.
+- Nếu khách hỏi "còn phòng không" hoặc "gợi ý phòng": dùng TOP PHÒNG LIÊN QUAN ở trên.
+- Nếu khách hỏi tiện nghi: chỉ liệt kê tiện nghi có trong dữ liệu.
 - Khi khách hỏi "có bao nhiêu phòng" hoặc "số lượng phòng", hãy trả lời: Tổng số ${totalAvailableRooms} phòng, và liệt kê số lượng từng loại
 - Hướng dẫn khách đặt phòng qua website
 - Giải đáp thắc mắc về dịch vụ
-- Luôn lịch sự, thân thiện
-
-LƯU Ý:
-- CHỈ cung cấp thông tin có trong danh sách trên
-- Khi trả lời về số lượng phòng, luôn cung cấp cả tổng số và số lượng từng loại
-- Nếu không biết, hướng dẫn khách xem chi tiết trên website hoặc liên hệ hotline
-- Giá có thể thay đổi, khuyến khích khách kiểm tra trên website để có giá chính xác nhất`;
+- Luôn lịch sự, thân thiện`;
         
         return prompt;
     } catch (error) {
@@ -278,7 +424,8 @@ async function sendMessage() {
     
     try {
         // Đọc dữ liệu thực tế từ localStorage và tạo system prompt động
-        const dynamicSystemPrompt = buildSystemPrompt();
+        const dynamicSystemPrompt = buildSystemPrompt(message);
+        const trimmedHistory = chatHistory.slice(-MAX_HISTORY_TURNS);
         
         const response = await fetch(OPENROUTER_API_URL, {
             method: 'POST',
@@ -292,7 +439,7 @@ async function sendMessage() {
                 model: MODEL,
                 messages: [
                     { role: 'system', content: dynamicSystemPrompt },
-                    ...chatHistory
+                    ...trimmedHistory
                 ],
                 temperature: 0.3,
                 max_tokens: 500,
