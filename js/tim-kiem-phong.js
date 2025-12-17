@@ -627,7 +627,7 @@ function displayResults(rooms) {
         noiDung.className = 'noi-dung-the-phong';
 
         const anhWrap = document.createElement('div');
-        anhWrap.className = 'anh-phong-tim-kiem';
+        anhWrap.className = 'anh-phong-tim';
         const img = document.createElement('img');
         img.src = room.image || '';
         img.alt = room.name || '';
@@ -980,3 +980,134 @@ function _shouldShowRoom(room, checkin, checkout, adults, children) {
 /* NOTE: To apply, replace the room filtering in performSearch or displayResults to call
      _shouldShowRoom(room, searchStart, searchEnd, adults, children) and skip rooms that return false.
 */
+/* ===== Transform search cards into balanced layout (image left, info right) ===== */
+(function(){
+  function transformCard(card){
+    if(!card || card.dataset.transformed === '1') return;
+    card.dataset.transformed = '1';
+
+    // 1) Ensure .anh-phong exists and contains an IMG (wrap if needed)
+    var anh = card.querySelector('.anh-phong');
+    var img = card.querySelector('img');
+    if(!anh && img){
+      var wrapper = document.createElement('div');
+      wrapper.className = 'anh-phong';
+      // move image into wrapper
+      img.parentNode.insertBefore(wrapper, img);
+      wrapper.appendChild(img);
+    } else if (anh && !anh.querySelector('img') && img){
+      anh.appendChild(img);
+    }
+
+    // 2) Ensure .noi-dung-phong exists: gather everything _except_ .anh-phong and .price-cta
+    var noi = card.querySelector('.noi-dung-phong');
+    if(!noi){
+      noi = document.createElement('div');
+      noi.className = 'noi-dung-phong';
+      // Move nodes (that are not .anh-phong or .price-cta) into noi
+      var children = Array.from(card.children);
+      children.forEach(function(ch){
+        if(ch === null) return;
+        if(ch.classList && (ch.classList.contains('anh-phong') || ch.classList.contains('price-cta'))) return;
+        // Some generators may create inner wrappers; preserve them
+        noi.appendChild(ch);
+      });
+      // Insert noi before existing price-cta if any, else append
+      var existingPrice = card.querySelector('.price-cta');
+      if(existingPrice) card.insertBefore(noi, existingPrice);
+      else card.appendChild(noi);
+    }
+
+    // 3) Ensure bottom container .phan-duoi exists inside noi
+    var phan = noi.querySelector('.phan-duoi');
+    if(!phan){
+      phan = document.createElement('div');
+      phan.className = 'phan-duoi';
+      noi.appendChild(phan);
+    }
+
+    // 4) Move existing .price-cta from card into phan (so price+buttons are in bottom right)
+    var priceCta = card.querySelector('.price-cta');
+    if(priceCta){
+      phan.appendChild(priceCta);
+    } else {
+      // if missing, try to create small price-cta from any .gia-phong found inside noi
+      var priceNode = noi.querySelector('.gia-phong') || noi.querySelector('.gia-chinh');
+      if(priceNode){
+        var pc = document.createElement('div');
+        pc.className = 'price-cta';
+        // clone priceNode to avoid moving it from top if present
+        pc.appendChild(priceNode.cloneNode(true));
+        var btns = document.createElement('div');
+        btns.className = 'btns-cta';
+        var bd = document.createElement('button'); bd.className='btn-detail'; bd.textContent='Chi Tiết';
+        var bb = document.createElement('button'); bb.className='btn-book'; bb.textContent='Đặt Ngay';
+        btns.appendChild(bd); btns.appendChild(bb);
+        pc.appendChild(btns);
+        phan.appendChild(pc);
+      }
+    }
+
+    // 5) Hook up buttons (if not already)
+    var btnDetail = phan.querySelector('.btn-detail');
+    var btnBook = phan.querySelector('.btn-book');
+    var onclickAttr = card.getAttribute('onclick') || '';
+    var match = onclickAttr.match(/room-detail\.html\?id=(\d+)/);
+    var roomId = match ? match[1] : null;
+
+    if(btnDetail){
+      btnDetail.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(roomId) window.location.href = 'room-detail.html?id=' + roomId;
+        else {
+          // try to find a link inside card or click card
+          var a = card.querySelector('a');
+          if(a && a.href) window.location.href = a.href;
+          else card.click();
+        }
+      });
+    }
+    if(btnBook){
+      btnBook.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(roomId) window.location.href = 'room-detail.html?id=' + roomId + '&action=book';
+        else card.click();
+      });
+    }
+
+    // final minor tweak: ensure card is flex and children order correct (anh-phong then noi-dung-phong then (price if any))
+    card.style.display = 'flex';
+  }
+
+  // Transform existing cards
+  var container = document.querySelector('.noi-dung-ket-qua') || document.getElementById('searchResultsContainer') || document.querySelector('.danh-sach-ket-qua');
+  if(container){
+    var cards = container.querySelectorAll('.the-phong');
+    cards.forEach(transformCard);
+
+    // Observe new cards (AJAX/pagination)
+    var mo = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        if(m.addedNodes && m.addedNodes.length){
+          m.addedNodes.forEach(function(node){
+            if(node.nodeType === 1 && node.classList.contains('the-phong')) transformCard(node);
+            else {
+              var found = node.querySelectorAll ? node.querySelectorAll('.the-phong') : [];
+              Array.prototype.forEach.call(found, transformCard);
+            }
+          });
+        }
+      });
+    });
+    mo.observe(container, { childList:true, subtree:true });
+    // keep it alive (do NOT disconnect) so future pages also get transformed
+  } else {
+    // fallback: try again when DOM ready
+    document.addEventListener('DOMContentLoaded', function(){
+      var c = document.querySelector('.noi-dung-ket-qua') || document.getElementById('searchResultsContainer') || document.querySelector('.danh-sach-ket-qua');
+      if(c){
+        var cs = c.querySelectorAll('.the-phong'); cs.forEach(transformCard);
+      }
+    });
+  }
+})();
