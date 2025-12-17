@@ -97,6 +97,102 @@ document.addEventListener('DOMContentLoaded', function() {
     loadSearchDataFromURL();
 });
 
+
+/* Enhance search cards: move price to right + add CTA */
+(function enhanceSearchCards() {
+    function processCard(card) {
+        if (!card || card.dataset.enhanced === '1') return;
+        card.dataset.enhanced = '1';
+
+        // lấy giá hiện có (nếu có) từ .gia-phong
+        var gia = card.querySelector('.gia-phong');
+        // tạo price-cta
+        var priceCta = document.createElement('div');
+        priceCta.className = 'price-cta';
+
+        // clone price nếu có
+        if (gia) {
+            priceCta.appendChild(gia); // chuyển chính node (không clone) để giữ format
+        } else {
+            var empty = document.createElement('div');
+            empty.className = 'gia-phong';
+            empty.textContent = '';
+            priceCta.appendChild(empty);
+        }
+
+        // nút
+        var btns = document.createElement('div');
+        btns.className = 'btns-cta';
+        var btnDetail = document.createElement('button');
+        btnDetail.className = 'btn-detail';
+        btnDetail.textContent = 'Chi Tiết';
+        var btnBook = document.createElement('button');
+        btnBook.className = 'btn-book';
+        btnBook.textContent = 'Đặt Ngay';
+
+        btns.appendChild(btnDetail);
+        btns.appendChild(btnBook);
+        priceCta.appendChild(btns);
+
+        // thêm vào card (phía cuối để nó nằm ở bên phải do flex)
+        card.appendChild(priceCta);
+
+        // Lấy room id từ onclick attribute nếu card onclick có dạng room-detail.html?id=NN
+        var onclickAttr = card.getAttribute('onclick') || '';
+        var match = onclickAttr.match(/room-detail\.html\?id=(\d+)/);
+        var roomId = match ? match[1] : null;
+
+        // hành vi: Chi tiết -> mở trang chi tiết; Đặt Ngay -> mở chi tiết/đặt phòng
+        btnDetail.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (roomId) window.location.href = 'room-detail.html?id=' + roomId;
+            else card.click();
+        });
+        btnBook.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Bạn có thể chuyển tới trang booking chi tiết hoặc chuyển tới chi tiết + tham số đặt
+            if (roomId) {
+                // VD: chuyển tới chi tiết, có thể tự đưa đến trang thanh toán
+                window.location.href = 'room-detail.html?id=' + roomId + '&action=book';
+            } else {
+                card.click();
+            }
+        });
+
+        // tránh hành vi click card dẫn tới double click khi bấm vào nút
+        btnDetail.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+        btnBook.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+    }
+
+    // Observer: quan sát container để xử lý khi JS render các card
+    function initObserver() {
+        var container = document.getElementById('searchResultsContainer') || document.querySelector('.danh-sach-ket-qua');
+        if (!container) return;
+
+        var mo = new MutationObserver(function(muts) {
+            var cards = container.querySelectorAll('.the-phong');
+            cards.forEach(processCard);
+        });
+
+        mo.observe(container, { childList: true, subtree: true });
+
+        // chạy 1 lần cho các card đã có
+        setTimeout(function() {
+            var cards = container.querySelectorAll('.the-phong');
+            cards.forEach(processCard);
+            // bỏ observer sau 6s để tránh leak (nếu muốn có thể để lâu hơn)
+            setTimeout(function(){ mo.disconnect(); }, 6000);
+        }, 300);
+    }
+
+    // Khởi tạo khi DOM sẵn sàng
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initObserver);
+    } else {
+        initObserver();
+    }
+})();
+
 function khoiTaoDatePickerTimKiem() {
     var truongNgay = document.querySelector('.truong-ngay-thang');
     if (!truongNgay) return;

@@ -13,6 +13,161 @@
     padding: 0 24px 24px 24px;
 }
 
+/* ---------- Search results: new horizontal card layout ---------- */
+/* Áp dụng cho page Tìm kiếm (không ảnh hưởng grid trang chủ) */
+.noi-dung-ket-qua .the-phong {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #eef2f6;
+    background: #ffffff;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.noi-dung-ket-qua .the-phong:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* Ảnh bên trái, giữ tỉ lệ, cover */
+.noi-dung-ket-qua .the-phong .anh-phong {
+    flex: 0 0 420px;        /* độ rộng cứng cho ảnh */
+    height: 260px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    background: #f6f7fb;
+}
+.noi-dung-ket-qua .the-phong .anh-phong img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Nội dung giữa - chi tiết */
+.noi-dung-ket-qua .the-phong .noi-dung-phong {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px 0;
+}
+
+/* Dòng tiêu đề + giá sẽ được căn 2 đầu */
+.noi-dung-ket-qua .the-phong .tieu-de-phong {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.noi-dung-ket-qua .the-phong .tieu-de-phong .ten-phong {
+    font-size: 1.18rem;
+    font-weight: 700;
+    color: #0f1724;
+    margin: 0;
+}
+.noi-dung-ket-qua .the-phong .tieu-de-phong .gia-phong {
+    font-size: 1.28rem;
+    font-weight: 800;
+    color: #2563eb; /* đồng bộ màu logo/header */
+}
+
+/* Thông tin bổ sung (khách, địa điểm, mô tả) */
+.noi-dung-ket-qua .the-phong .loai-phong,
+.noi-dung-ket-qua .the-phong .danh-gia-phong {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-top: 8px;
+}
+.noi-dung-ket-qua .the-phong .mo-ta-phong {
+    color: #475569;
+    font-size: 0.95rem;
+    margin-top: 12px;
+    line-height: 1.45;
+}
+
+/* Tiện nghi nhỏ */
+.noi-dung-ket-qua .the-phong .tien-ich-phong-tim-kiem,
+.noi-dung-ket-qua .the-phong .tien-ich-phong {
+    margin-top: 12px;
+}
+
+/* Vùng giá + CTA (bên phải) */
+.price-cta {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    min-width: 190px;
+    gap: 12px;
+    padding-left: 8px;
+}
+.price-cta .gia-phong {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #2563eb;
+}
+.btns-cta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.btn-detail,
+.btn-book {
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+}
+.btn-detail {
+    background: #ffffff;
+    color: #2563eb;
+    border: 1px solid #d1d5db;
+}
+.btn-book {
+    background: linear-gradient(90deg,#7c3aed,#2563eb);
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(37,99,235,0.18);
+}
+
+/* Khi ở chế độ lưới, vẫn giữ responsive */
+@media (max-width: 1024px) {
+    .noi-dung-ket-qua .the-phong { gap: 16px; }
+    .noi-dung-ket-qua .the-phong .anh-phong { flex: 0 0 360px; height: 220px; }
+    .price-cta { min-width: 160px; }
+}
+@media (max-width: 820px) {
+    /* Trên mobile: chuyển thành column, giống trang chủ */
+    .noi-dung-ket-qua .the-phong {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .noi-dung-ket-qua .the-phong .anh-phong {
+        width: 100%;
+        height: 280px;
+        flex: none;
+    }
+    .price-cta {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        min-width: 0;
+        width: 100%;
+        margin-top: 12px;
+    }
+    .btns-cta { gap: 8px; }
+}
+
+/* Đồng bộ màu nút Tìm chính với logo/trang chủ (nếu muốn) */
+.nut-tim-kiem-chinh {
+    background: #2563eb !important;
+
 .nut-nhanh {
     padding: 8px 16px;
     border: 2px solid #0071c2;
