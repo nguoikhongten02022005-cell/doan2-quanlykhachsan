@@ -354,6 +354,11 @@ body {
     margin-right: 8px;
 }
 
+.btn-action:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .btn-detail {
     background: #eff6ff;
     color: #2563eb;

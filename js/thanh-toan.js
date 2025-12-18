@@ -4,6 +4,19 @@
 var maGiamGiaDangApDung = null;
 var tongTienGoc = 0;
 
+// Hàm parse tiền VND (bỏ tất cả ký tự không phải số)
+function parseVND(val) {
+  if (val == null) return 0;
+  if (typeof val === 'number') return val;
+
+  const s = String(val);
+  const negative = s.includes('-');              // để đọc dòng "-184.000 ₫"
+  const digits = s.replace(/[^\d]/g, '');        // bỏ hết ., ₫, khoảng trắng...
+  const n = Number(digits || 0);
+
+  return negative ? -n : n;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
     var authUser = ensureAuthenticated({
@@ -31,10 +44,8 @@ function diemThongTinUser() {
 }
 
 function getNumericPrice(b) {
-    var p = (b && (b.price || b.totalAmount || b.total)) || 0;
-    if (typeof p === 'string') p = p.replace(/[^\d.-]/g, '');
-    var n = Number(p);
-    return isNaN(n) ? 0 : n;
+  var p = (b && (b.price || b.totalAmount || b.total)) || 0;
+  return parseVND(p);
 }
 
 // Helper: kiểm tra booking có trong giỏ hàng (pending + Chưa thanh toán)
@@ -283,9 +294,7 @@ function luuThongTinDatPhong(finalize = false) {
   function getMoneyFromEl(id) {
     var el = document.getElementById(id);
     if (!el) return 0;
-    var txt = (el.textContent || '').replace(/[^\d.-]/g, '');
-    var n = Number(txt);
-    return isNaN(n) ? 0 : n;
+    return parseVND(el.textContent || '');
   }
 
   // Tổng tiền theo UI (đã tính phí + VAT + giảm giá)
