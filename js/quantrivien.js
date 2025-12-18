@@ -82,18 +82,22 @@ function loadRooms() {
     displayRooms(rooms);
 }
 
-// Hàm kiểm tra phòng có đang được đặt không
+// Hàm kiểm tra phòng có đang được đặt không (CHỈ tính các trạng thái còn chiếm phòng)
 function isRoomCurrentlyBooked(roomId) {
-    var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    
-    for (var i = 0; i < bookings.length; i++) {
-        var b = bookings[i];
-        // Kiểm tra các đơn chưa hủy (bao gồm pending, confirmed, checkedin, completed)
-        if (b.roomId == roomId && b.status !== 'cancelled') {
-            return true;
-        }
-    }
-    return false;
+  var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+
+  for (var i = 0; i < bookings.length; i++) {
+    var b = bookings[i];
+    if (!b) continue;
+
+    var status = (b.status || 'pending').toLowerCase();
+
+    // completed / cancelled => không còn chiếm phòng
+    if (status === 'cancelled' || status === 'canceled' || status === 'completed') continue;
+
+    if (String(b.roomId) === String(roomId)) return true;
+  }
+  return false;
 }
 
 function displayRooms(rooms) {

@@ -106,8 +106,10 @@ function isRoomAvailableForPeriod(roomId, checkin, checkout) {
         var b = bookings[i];
         if (!b) continue;
         if (String(b.roomId) !== String(roomId)) continue;
-        var status = (b.status || '').toLowerCase();
-        if (status === 'cancelled' || status === 'canceled') continue;
+        var status = (b.status || 'pending').toLowerCase();
+        if (status === 'cancelled' || status === 'canceled' || status === 'completed') {
+            continue;
+        }
 
         var bs = _toDateTime(b.checkIn || b.checkin, false);
         // Nếu booking lưu dạng chỉ date (YYYY-MM-DD), coi checkout là end-of-day
@@ -468,7 +470,9 @@ function performSearch(checkin, checkout, adults, children) {
         var availableRooms = rooms.filter(function(room) {
             try {
                 if (!room) return false;
-                if (room.status && room.status !== 'available') return false;
+                // Chỉ chặn phòng maintenance, các phòng khác (available, occupied) đều có thể tìm kiếm
+                var rs = (room.status || '').toLowerCase();
+                if (rs === 'maintenance') return false;
 
                 // capacity
                 var cap = { adults: 2, children: 0 };
@@ -920,8 +924,10 @@ function isRoomAvailableForPeriodStrict(roomId, checkin, checkout) {
         if (!b) continue;
         if (String(b.roomId) !== String(roomId)) continue;
 
-        var st = (b.status || '').toString().toLowerCase();
-        if (st === 'cancelled' || st === 'canceled') continue;
+        var st = (b.status || 'pending').toString().toLowerCase();
+        if (st === 'cancelled' || st === 'canceled' || st === 'completed') {
+            continue;
+        }
 
         var bs = _toDateTime(b.checkIn || b.checkin, false);
         var be = _toDateTime(b.checkOut || b.checkout, true);

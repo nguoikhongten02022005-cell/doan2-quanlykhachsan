@@ -44,14 +44,18 @@ function loadRoomsDynamic() {
         bookings = [];
     }
     
-    // Hàm kiểm tra phòng đã được đặt chưa
+    // Hàm kiểm tra phòng đã được đặt chưa (CHỈ tính các trạng thái còn chiếm phòng)
     function isRoomCurrentlyBooked(roomId) {
         for (var i = 0; i < bookings.length; i++) {
             var b = bookings[i];
-            // Nếu phòng có đơn đặt và chưa hủy thì ẩn
-            if (b.roomId == roomId && b.status !== 'cancelled') {
-                return true;
-            }
+            if (!b) continue;
+
+            var status = (b.status || 'pending').toLowerCase();
+
+            // completed / cancelled => không còn chiếm phòng
+            if (status === 'cancelled' || status === 'canceled' || status === 'completed') continue;
+
+            if (String(b.roomId) === String(roomId)) return true;
         }
         return false;
     }
