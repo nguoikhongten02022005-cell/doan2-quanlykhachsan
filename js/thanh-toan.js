@@ -31,16 +31,10 @@ function diemThongTinUser() {
 }
 
 function getNumericPrice(b) {
-  var p = (b && (b.price || b.totalAmount || b.total)) || 0;
-
-  // Nếu là chuỗi kiểu "480.000 ₫" => lấy đúng 480000
-  if (typeof p === 'string') {
-    var digits = p.replace(/[^\d]/g, ''); // bỏ hết ký tự không phải số (kể cả dấu . , ₫)
-    p = digits ? Number(digits) : 0;
-  }
-
-  var n = Number(p);
-  return isNaN(n) ? 0 : n;
+    var p = (b && (b.price || b.totalAmount || b.total)) || 0;
+    if (typeof p === 'string') p = p.replace(/[^\d.-]/g, '');
+    var n = Number(p);
+    return isNaN(n) ? 0 : n;
 }
 
 // Helper: kiểm tra booking có trong giỏ hàng (pending + Chưa thanh toán)
@@ -289,17 +283,9 @@ function luuThongTinDatPhong(finalize = false) {
   function getMoneyFromEl(id) {
     var el = document.getElementById(id);
     if (!el) return 0;
-
-    var raw = (el.textContent || '').trim();
-
-    // Detect âm (ví dụ "-82.800 ₫")
-    var sign = raw.includes('-') ? -1 : 1;
-
-    // Lấy CHỈ chữ số: "469.200 ₫" => "469200"
-    var digits = raw.replace(/[^\d]/g, '');
-    var n = digits ? Number(digits) : 0;
-
-    return sign * n;
+    var txt = (el.textContent || '').replace(/[^\d.-]/g, '');
+    var n = Number(txt);
+    return isNaN(n) ? 0 : n;
   }
 
   // Tổng tiền theo UI (đã tính phí + VAT + giảm giá)

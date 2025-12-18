@@ -1073,8 +1073,11 @@ function loadPromotions() {
         // Chỉ hiển thị % (0-100)
         var discountText = (promo.discountValue || 0) + '%';
         
-        // Format số lượng - chỉ hiển thị số tối đa
-        var quantityText = promo.maxUses || 0;
+        // Format số lượng - hiển thị số lượng còn lại (maxUses - usedCount)
+        const maxUses = Number(promo.maxUses || 0);
+        const used = Number(promo.usedCount || 0);
+        const soLuongConLai = Math.max(0, maxUses - used);
+        var quantityText = soLuongConLai;
         
         // Format ngày
         var startDate = promo.startDate ? formatDateDisplay(promo.startDate) : 'N/A';
