@@ -178,7 +178,8 @@ function displayBookings() {
         html += '<td><span class="status-badge ' + statusClass + '">' + statusText + '</span></td>';
         html += '<td>';
         html += '<button class="btn-action btn-detail" onclick="viewBookingDetail(\'' + booking.id + '\')"><i class="fas fa-eye"></i> Chi tiết</button>';
-        if (booking.status === 'pending' || booking.status === 'confirmed') {
+        var canCancel = (!booking.status || booking.status === 'pending'); // status rỗng coi như pending
+        if (canCancel) {
             html += '<button class="btn-action btn-cancel" onclick="cancelBooking(\'' + booking.id + '\')"><i class="fas fa-times"></i> Hủy đơn</button>';
         }
         html += '</td>';
@@ -294,23 +295,29 @@ function closeModal() {
 }
 
 function cancelBooking(bookingId) {
-    if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-        return;
-    }
-    
     var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
     var index = bookings.findIndex(function(b) { return b.id == bookingId; });
-    
-    if (index !== -1) {
-        bookings[index].status = 'cancelled';
-        bookings[index].cancelledTime = new Date().toISOString();
-        localStorage.setItem('bookings', JSON.stringify(bookings));
-        
-        alert('Đã hủy đơn hàng thành công!');
-        loadBookings();
-    } else {
+
+    if (index === -1) {
         alert('Không tìm thấy đơn hàng!');
+        return;
     }
+
+    // CHỐT CHẶN: chỉ cho hủy khi pending (hoặc chưa có status)
+    var currentStatus = bookings[index].status || 'pending';
+    if (currentStatus !== 'pending') {
+        alert('Đơn hàng đã được xử lý (' + getStatusText(currentStatus) + ') nên không thể hủy.');
+        return;
+    }
+
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
+
+    bookings[index].status = 'cancelled';
+    bookings[index].cancelledTime = new Date().toISOString();
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+
+    alert('Đã hủy đơn hàng thành công!');
+    loadBookings();
 }
 
 function enableEditMode() {
