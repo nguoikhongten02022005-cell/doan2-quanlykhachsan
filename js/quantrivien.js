@@ -1558,35 +1558,41 @@ function loadRevenueData() {
         'Suite': 0
     };
     
+    // Tính doanh thu theo loại phòng từ bookings
+    for (var i = 0; i < bookings.length; i++) {
+        var b = bookings[i];
+        if (!b) continue;
+
+        // Chỉ tính các đơn đã hoàn thành hoặc đã xác nhận
+        var status = (b.status || '').toLowerCase();
+        if (status !== 'completed' && status !== 'confirmed') continue;
+
+        var amount = parseInt((b.totalAmount || b.total || '0').toString().replace(/[^\d]/g, '')) || 0;
+        var roomType = mapRoomType(b.roomType || b.type || 'Standard');
+
+        if (!revenueByType[roomType]) revenueByType[roomType] = 0;
+        revenueByType[roomType] += amount;
+    }
+    
+    // Render dữ liệu lên giao diện
+    var container = document.getElementById('revenueByType');
+    if (container) {
+        container.innerHTML = '';
+        Object.keys(revenueByType).forEach(function(type) {
+            container.innerHTML += '<div class="revenue-item"><span class="room-type">' + type + '</span><span class="revenue-amount">' + formatMoney(revenueByType[type]) + '</span></div>';
+        });
+    }
+    
     var totalBookings = bookings.length;
     var confirmedBookings = 0;
     var cancelledBookings = 0;
     var pendingBookings = 0;
     
-    for (var i = 0; i < bookings.length; i++) {
-        var booking = bookings[i];
-        var room = rooms.find(function(r) { return r.id == booking.roomId; });
-        
-        if (room && booking.status !== 'cancelled') {
-            var revenue = parseFloat(booking.totalAmount) || 0;
-            if (revenueByType.hasOwnProperty(room.type)) {
-                revenueByType[room.type] += revenue;
-            }
-        }
-        
+    for (var j = 0; j < bookings.length; j++) {
+        var booking = bookings[j];
         if (booking.status === 'confirmed') confirmedBookings++;
         else if (booking.status === 'cancelled') cancelledBookings++;
         else if (booking.status === 'pending') pendingBookings++;
-    }
-    
-    var revenueItems = document.querySelectorAll('#revenueByType .revenue-item');
-    for (var j = 0; j < revenueItems.length; j++) {
-        var item = revenueItems[j];
-        var roomType = item.querySelector('.room-type').textContent;
-        var amount = item.querySelector('.revenue-amount');
-        if (revenueByType.hasOwnProperty(roomType)) {
-            amount.textContent = formatMoney(revenueByType[roomType]);
-        }
     }
     
     var revenueTotalBookingsEl = document.getElementById('revenueTotalBookings');
