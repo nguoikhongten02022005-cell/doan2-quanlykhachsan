@@ -150,17 +150,20 @@ function khoiTaoMenuDiDong() {
     var mobileMenu = document.getElementById('menuDiDong');
     var mobileOverlay = document.getElementById('nenDiDong');
     var mobileCloseBtn = document.getElementById('dongMenu');
+    var scrollY = 0;
     
     if (!hamburgerBtn || !mobileMenu) return;
     
     hamburgerBtn.addEventListener('click', function() {
+        scrollY = window.scrollY || window.pageYOffset || 0;
         mobileMenu.classList.add('active');
         if (mobileOverlay) {
             mobileOverlay.classList.add('active');
             mobileOverlay.style.display = 'block';
         }
         mobileMenu.style.display = 'block';
-        document.body.style.overflow = 'hidden';
+        document.body.classList.add('menu-open');
+        document.body.style.top = (-scrollY) + 'px';
     });
     
     function closeMobileMenu() {
@@ -169,7 +172,9 @@ function khoiTaoMenuDiDong() {
             mobileOverlay.classList.remove('active');
             mobileOverlay.style.display = 'none';
         }
-        document.body.style.overflow = '';
+        document.body.classList.remove('menu-open');
+        document.body.style.top = '';
+        window.scrollTo(0, scrollY);
         setTimeout(function() {
             mobileMenu.style.display = 'none';
         }, 300);

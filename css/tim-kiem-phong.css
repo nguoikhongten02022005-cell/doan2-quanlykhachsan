@@ -1433,9 +1433,10 @@ body.khoa-scroll{ overflow:hidden; }
    ========================= */
 
 /* Nâng stacking context của thanh tìm kiếm lên cao */
-.thanh-tim-kiem-chinh,
-.hop-chua-thanh-tim-kiem,
-.form-tim-kiem-chinh{
+/* Chỉ nâng khi popup mở để tránh che nội dung khi đóng */
+body.khoa-scroll .thanh-tim-kiem-chinh,
+body.khoa-scroll .hop-chua-thanh-tim-kiem,
+body.khoa-scroll .form-tim-kiem-chinh{
   position: relative !important;
   z-index: 2000 !important;
 }
@@ -1448,7 +1449,7 @@ body.khoa-scroll{ overflow:hidden; }
   opacity: 0;
   pointer-events: none;
   transition: opacity .15s ease;
-  z-index: 2500; /* dưới popup */
+  z-index: 1500; /* dưới popup, trên nội dung */
 }
 #nenPopupTimKiem.hien{
   opacity: 1;
@@ -1470,7 +1471,7 @@ body.khoa-scroll{
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 18px 50px rgba(0,0,0,.20);
-  z-index: 3000 !important; /* đè lên kết quả */
+  z-index: 2001 !important; /* trên nền overlay */
 }
 
 /* Popup khách/phòng */
@@ -1480,7 +1481,7 @@ body.khoa-scroll{
   right: 0 !important;
   left: auto !important;
 
-  z-index: 3000 !important; /* đè lên kết quả */
+  z-index: 2001 !important; /* trên nền overlay */
 }
 
 /* Mobile: đưa popup thành fixed để không bị "lọt dưới" khi cuộn */
@@ -1495,6 +1496,6 @@ body.khoa-scroll{
     max-width: 720px !important;
     max-height: calc(100vh - 140px) !important;
     overflow: auto !important;
-    z-index: 3000 !important;
+    z-index: 2001 !important;
   }
 }

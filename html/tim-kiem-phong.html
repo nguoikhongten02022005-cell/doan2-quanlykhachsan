@@ -55,8 +55,8 @@
         </nav>
         <div class="nen-menu-di-dong" id="nenDiDong"></div>
         <div class="menu-di-dong" id="menuDiDong">
-            <div class="tieu-de-menu-di-dong">
-                <div class="logo">
+<div class="tieu-de-menu-di-dong">
+                <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer">
                     <i class="fas fa-bed"></i>
                     <span>QuickStay</span>
                 </div>
@@ -73,56 +73,94 @@
         </div>
     </header>
 
-    <div class="thanh-tim-kiem-chinh">
-        <div class="hop-chua-thanh-tim-kiem">
-            <div class="form-tim-kiem-chinh">
-                <div class="truong-ngay-thang">
+    <div class="khung-bieu-mau-dat">
+        <div class="bieu-mau-dat">
+            <div class="truong" id="truongNgay">
+                <div class="bieu-tuong">
                     <i class="fas fa-calendar-alt"></i>
-                    <span id="hienThiNgayTim">Ngày nhận phòng – Ngày trả phòng</span>
                 </div>
-                
-                <div class="truong-khach-phong" id="truongKhachTim">
-                    <i class="fas fa-user"></i>
-                    <span id="hienThiKhachTim">1 người lớn · 0 trẻ em · 1 phòng</span>
+                <div class="noi-dung-truong">
+                    <div class="hien-thi" id="hienThiNgay">Ngày nhận phòng — Ngày trả phòng</div>
+                </div>
+                <div class="hop-lich" id="hopNgay">
+                    <div class="khung-lich">
+                        <button type="button" class="dieu-huong-thang" id="thangTruoc">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        
+                        <div class="lich-kep">
+                            <div class="thang">
+                                <div class="tieu-de-thang" id="tieuDeThang1">tháng 10 năm 2025</div>
+                                <div class="luoi-lich" id="lich1"></div>
+                            </div>
+                            
+                            <div class="thang">
+                                <div class="tieu-de-thang" id="tieuDeThang2">tháng 11 năm 2025</div>
+                                <div class="luoi-lich" id="lich2"></div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="dieu-huong-thang" id="thangSau">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                     
-                    <div class="hop-khach" id="hopKhachTim">
-                        <div class="hang-khach">
-                            <div class="nhan-khach">Người lớn</div>
-                            <div class="dieu-khien-khach">
-                                <button type="button" class="nut-khach minus" data-target="nguoiLon">−</button>
-                                <span class="so-khach" id="soNguoiLonTim">1</span>
-                                <button type="button" class="nut-khach plus" data-target="nguoiLon">+</button>
-                            </div>
-                        </div>
-                        
-                        <div class="hang-khach">
-                            <div class="nhan-khach">Trẻ em</div>
-                            <div class="dieu-khien-khach">
-                                <button type="button" class="nut-khach minus" data-target="treEm">−</button>
-                                <span class="so-khach" id="soTreEmTim">0</span>
-                                <button type="button" class="nut-khach plus" data-target="treEm">+</button>
-                            </div>
-                        </div>
-                        
-                        <div class="hang-khach">
-                            <div class="nhan-khach">Phòng</div>
-                            <div class="dieu-khien-khach">
-                                <button type="button" class="nut-khach minus" data-target="phong">−</button>
-                                <span class="so-khach" id="soPhongTim">1</span>
-                                <button type="button" class="nut-khach plus" data-target="phong">+</button>
-                            </div>
-                        </div>
-                        
-                        <button type="button" class="nut-xong-khach" id="nutXongKhachTim">Xong</button>
+                    <div class="nut-chon-nhanh">
+                        <button type="button" class="nut-nhanh active">Ngày chính xác</button>
+                        <button type="button" class="nut-nhanh">± 1 ngày</button>
+                        <button type="button" class="nut-nhanh">± 2 ngày</button>
+                        <button type="button" class="nut-nhanh">± 3 ngày</button>
+                        <button type="button" class="nut-nhanh">± 7 ngày</button>
                     </div>
                 </div>
-                
-                <button class="nut-tim-kiem-chinh" id="nutTimKiemChinh">
-                    Tìm
-                </button>
             </div>
+
+            <div class="truong" id="truongKhach">
+                <div class="bieu-tuong">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="noi-dung-truong">
+                    <div class="hien-thi" id="hienThiKhach">1 người lớn · 0 trẻ em · 1 phòng</div>
+                </div>
+                <div class="hop-khach" id="hopKhach">
+                    <div class="hang-khach">
+                        <div class="nhan-khach">Người lớn</div>
+                        <div class="dieu-khien-khach">
+                            <button type="button" class="nut-khach minus" data-target="nguoiLon">−</button>
+                            <span class="so-khach" id="soNguoiLon">1</span>
+                            <button type="button" class="nut-khach plus" data-target="nguoiLon">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="hang-khach">
+                        <div class="nhan-khach">Trẻ em</div>
+                        <div class="dieu-khien-khach">
+                            <button type="button" class="nut-khach minus" data-target="treEm">−</button>
+                            <span class="so-khach" id="soTreEm">0</span>
+                            <button type="button" class="nut-khach plus" data-target="treEm">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="hang-khach">
+                        <div class="nhan-khach">Phòng</div>
+                        <div class="dieu-khien-khach">
+                            <button type="button" class="nut-khach minus" data-target="phong">−</button>
+                            <span class="so-khach" id="soPhong">1</span>
+                            <button type="button" class="nut-khach plus" data-target="phong">+</button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="nut-xong-khach" id="nutXongKhach">Xong</button>
+                </div>
+            </div>
+
+            <button type="button" class="nut-tim" id="nutTim">
+                Tìm
+            </button>
         </div>
     </div>
+
+
 
     <main class="noi-dung-chinh">
         <div class="hop-chua-tim-kiem">
@@ -218,8 +256,9 @@
         </div>
     </footer>
 
-    <script src="../js/storageService.js?v=2025"></script>
+<script src="../js/storageService.js?v=2025"></script>
     <script src="../js/common.js?v=2025"></script>
+    <script src="../js/index.js?v=2025" defer></script>
     <script src="../js/tim-kiem-phong.js"></script>
     
     <!-- Chatbot Widget -->
