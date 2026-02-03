@@ -244,20 +244,21 @@ body {
 .menu-di-dong {
   position: fixed;
   top: 0;
-  left: -100%;
+  left: auto;
+  right: -100%;
   width: 280px;
   max-width: 80%;
   height: 100%;
   background: white;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  transition: left 0.3s ease;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s ease;
   z-index: 2500;
   overflow-y: auto;
   padding-top: 20px;
 }
 
 .menu-di-dong.active {
-    left: 0;
+    right: 0;
 }
 
 .tieu-de-menu-di-dong {
