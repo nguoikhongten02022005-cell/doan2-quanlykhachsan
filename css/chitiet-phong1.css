@@ -446,6 +446,48 @@ body {
     flex-shrink: 0;
 }
 
+@media (max-width: 1200px) {
+    .chi-tiet-phong-chinh .hop-chua {
+        max-width: 100%;
+        padding: 0 20px;
+    }
+    
+    .anh-chinh {
+        height: 350px;
+    }
+    
+    .khu-thong-tin-phong h1.tieu-de-phong-lon {
+        font-size: 1.8rem;
+    }
+    
+    .hien-thi-gia-phong .gia {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .chi-tiet-phong-chinh .hop-chua {
+        padding: 0 15px;
+    }
+    
+    .anh-chinh {
+        height: 300px;
+    }
+    
+    .khu-thong-tin-phong h1.tieu-de-phong-lon {
+        font-size: 1.6rem;
+    }
+    
+    .luoi-tien-ich {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+    }
+    
+    .thong-tin-khach-san {
+        gap: 15px;
+    }
+}
+
 @media (max-width: 768px) {
     .bang-dat-phong {
         margin-top: 20px;
@@ -511,5 +553,196 @@ body {
     .anh-thu-nho img {
         display: inline-block;
         margin-right: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    body {
+        padding-top: 60px;
+    }
+    
+    .chi-tiet-phong-chinh {
+        padding: 15px 0;
+    }
+    
+    .chi-tiet-phong-chinh .hop-chua {
+        padding: 0 12px;
+    }
+    
+    .anh-chinh {
+        height: 200px;
+    }
+    
+    .anh-thu-nho {
+        gap: 8px;
+    }
+    
+    .thumbnail {
+        width: 70px;
+        height: 50px;
+    }
+    
+    .bo-dem-anh {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+    }
+    
+    .khu-thong-tin-phong h1.tieu-de-phong-lon {
+        font-size: 1.4rem;
+        margin-bottom: 8px;
+    }
+    
+    .hien-thi-gia-phong .gia {
+        font-size: 1.4rem;
+    }
+    
+    .hien-thi-gia-phong .don-vi-gia {
+        font-size: 0.9rem;
+    }
+    
+    .thong-tin-khach-san {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .muc-khach-san {
+        font-size: 0.9rem;
+    }
+    
+    .tien-nghi-phong,
+    .mo-ta-phong-chi-tiet {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .tien-nghi-phong h3,
+    .mo-ta-phong-chi-tiet h3 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+    
+    .muc-tien-ich {
+        font-size: 0.9rem;
+    }
+    
+    .mo-ta-phong-chi-tiet p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    
+    .the-dat-phong {
+        padding: 15px;
+    }
+    
+    .dau-the-dat .thong-tin-gia .gia {
+        font-size: 1.3rem;
+    }
+    
+    .date-group {
+        padding: 10px 12px;
+    }
+    
+    .date-group label {
+        font-size: 0.85rem;
+    }
+    
+    .date-group input {
+        font-size: 0.9rem;
+        height: 40px;
+        line-height: 40px;
+    }
+    
+    .guests-input label {
+        font-size: 0.85rem;
+    }
+    
+    .guests-input .field-display,
+    .guests-input select {
+        height: 40px;
+        font-size: 0.9rem;
+    }
+    
+    .tom-tat-dat-phong,
+    .ghi-chu-dat {
+        padding: 12px;
+        font-size: 0.85rem;
+    }
+    
+    .nut-dat-ngay {
+        padding: 12px;
+        font-size: 0.9rem;
+        min-height: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chi-tiet-phong-chinh .hop-chua {
+        padding: 0 10px;
+    }
+    
+    .anh-chinh {
+        height: 180px;
+    }
+    
+    .khu-thong-tin-phong h1.tieu-de-phong-lon {
+        font-size: 1.3rem;
+    }
+    
+    .hien-thi-gia-phong .gia {
+        font-size: 1.3rem;
+    }
+    
+    .thumbnail {
+        width: 60px;
+        height: 45px;
+    }
+    
+    .luoi-tien-ich {
+        gap: 10px;
+    }
+}
+
+@media (max-width: 360px) {
+    .khu-thong-tin-phong h1.tieu-de-phong-lon {
+        font-size: 1.2rem;
+    }
+    
+    .hien-thi-gia-phong .gia {
+        font-size: 1.2rem;
+    }
+    
+    .thumbnail {
+        width: 55px;
+        height: 40px;
+    }
+    
+    .nut-dat-ngay {
+        font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .chi-tiet-phong-chinh .hop-chua {
+        max-width: 95%;
+    }
+    
+    .luoi-tien-ich {
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+}
+
+@media (min-width: 1025px) and (max-width: 1400px) {
+    .chi-tiet-phong-chinh .hop-chua {
+        max-width: 1100px;
+    }
+}
+
+@media (min-width: 1401px) {
+    .chi-tiet-phong-chinh .hop-chua {
+        max-width: 1300px;
+    }
+    
+    .anh-chinh {
+        height: 450px;
     }
 }

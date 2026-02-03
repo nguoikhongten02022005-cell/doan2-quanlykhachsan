@@ -52,6 +52,19 @@ function logout() {
     }
 }
 
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    
+    if (sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    } else {
+        sidebar.classList.add('active');
+        overlay.classList.add('active');
+    }
+}
+
 function loadDashboard() {
     var rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
     var bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
@@ -60,6 +73,10 @@ function loadDashboard() {
     document.getElementById('totalBookings').textContent = bookings.length;
     
     var totalRevenue = 0;
+    var activeGuests = 0;
+    var confirmedOrders = 0;
+    var pendingOrders = 0;
+    
     for (var i = 0; i < bookings.length; i++) {
         var booking = bookings[i];
         var status = booking.status || 'pending';
@@ -73,8 +90,24 @@ function loadDashboard() {
         
         var numericAmount = parseInt(amountStr.toString().replace(/[^\d]/g, '')) || 0;
         totalRevenue += numericAmount;
+        
+        if (status === 'checkedin') {
+            activeGuests++;
+        }
+        
+        if (status === 'confirmed') {
+            confirmedOrders++;
+        }
+        
+        if (status === 'pending') {
+            pendingOrders++;
+        }
     }
+    
     document.getElementById('totalRevenue').textContent = formatMoney(totalRevenue);
+    document.getElementById('activeGuests').textContent = activeGuests;
+    document.getElementById('confirmedOrders').textContent = confirmedOrders;
+    document.getElementById('pendingOrders').textContent = pendingOrders;
 }
 
 function loadRooms() {
@@ -1891,14 +1924,12 @@ function showSection(sectionId) {
         sections[i].style.display = 'none';
     }
     
-    // Hiện section được chọn
     var targetSection = document.getElementById(sectionId);
     if (targetSection) {
         targetSection.classList.add('active');
         targetSection.style.display = 'block';
     }
     
-    // Cập nhật page title
     var titles = {
         'dashboard': 'Dashboard',
         'rooms': 'Quản lý phòng',
@@ -1908,6 +1939,13 @@ function showSection(sectionId) {
         'accounts': 'Quản lý tài khoản'
     };
     document.getElementById('pageTitle').textContent = titles[sectionId] || 'Dashboard';
+    
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (window.innerWidth <= 992 && sidebar) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
     
     // Chỉ hiện phần báo cáo doanh thu khi ở Dashboard
     var revenueSection = document.getElementById('revenueSection');

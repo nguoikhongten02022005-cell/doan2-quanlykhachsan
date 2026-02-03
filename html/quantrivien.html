@@ -2,13 +2,17 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quản Trị Viên - QuickStay</title>
     <link rel="stylesheet" href="../css/quantrivien.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <aside class="sidebar">
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <aside class="sidebar" id="sidebar">
         <div class="logo">
             <i class="fas fa-bed"></i>
             <span>QuickStay Admin</span>
@@ -52,8 +56,10 @@
             <button class="logout-btn" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
-        </div>
+</div>
     </aside>
+    
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <main class="main-content">
         <header class="top-header">
@@ -70,54 +76,85 @@
             </div>
         </header>
 
-        <section id="dashboard" class="content-section active" style="display: block;">
-            <div class="stats-grid">
-                <div class="stat-card blue">
-                    <div class="stat-icon">
-                        <i class="fas fa-door-open"></i>
+<section id="dashboard" class="content-section active" style="display: block;">
+            <div class="dashboard-overview">
+                <h2 class="section-title">📊 Tổng quan</h2>
+                <div class="stats-grid">
+                    <div class="stat-card blue">
+                        <div class="stat-icon">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalRooms">0</h3>
+                            <p>Tổng số phòng</p>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 id="totalRooms">0</h3>
-                        <p>Tổng số phòng</p>
+                    
+                    <div class="stat-card green">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalBookings">0</h3>
+                            <p>Đặt phòng hôm nay</p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="stat-card green">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-check"></i>
+                    
+                    <div class="stat-card purple">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalRevenue">0đ</h3>
+                            <p>Doanh thu tháng</p>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 id="totalBookings">0</h3>
-                        <p>Đặt phòng hôm nay</p>
+                    
+                    <div class="stat-card orange">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="activeGuests">0</h3>
+                            <p>Khách đang ở</p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="stat-card purple">
-                    <div class="stat-icon">
-                        <i class="fas fa-dollar-sign"></i>
+                    
+                    <div class="stat-card cyan">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="confirmedOrders">0</h3>
+                            <p>Đã xác nhận</p>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 id="totalRevenue">0đ</h3>
-                        <p>Doanh thu tháng</p>
+                    
+                    <div class="stat-card red">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="pendingOrders">0</h3>
+                            <p>Chờ xử lý</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
         
-        <!-- Phần hiển thị doanh thu chi tiết - chỉ hiện ở Dashboard -->
-        <section class="revenue-section" id="revenueSection">
+<section class="revenue-section" id="revenueSection">
             <div class="section-header">
-                <h2>Báo cáo doanh thu</h2>
+                <h2>📈 Báo cáo & Phân tích</h2>
             </div>
             
-            <!-- Biểu đồ full width -->
             <div class="revenue-grid">
-                <div class="revenue-card">
+                <div class="revenue-card chart-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                        <h3 style="margin: 0; padding: 0; border: none;">Biểu Đồ Doanh Thu & Đặt Phòng</h3>
+                        <h3 style="margin: 0; padding: 0; border: none;">Biểu đồ doanh thu & Đặt phòng</h3>
                         <div style="position: relative;">
                             <button onclick="toggleTimeFilter()" style="padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #374151; font-weight: 500;">
-                                <i class="fas fa-sync-alt" style="color: #667eea;"></i>
+                                <i class="fas fa-sync-alt" style="color: #0057b8;"></i>
                                 <span id="selectedTimeFilter">Giờ</span>
                                 <i class="fas fa-chevron-down" style="font-size: 12px; color: #9ca3af;"></i>
                             </button>
@@ -135,11 +172,9 @@
                 </div>
             </div>
             
-            <!-- Các card thống kê 2 cột -->
             <div class="revenue-grid-2cols">
-                <!-- Doanh thu theo loại phòng -->
                 <div class="revenue-card">
-                    <h3>Doanh thu theo loại phòng</h3>
+                    <h3>💰 Doanh thu theo loại phòng</h3>
                     <div class="revenue-list" id="revenueByType">
                         <div class="revenue-item">
                             <span class="room-type">Standard</span>
@@ -160,9 +195,8 @@
                     </div>
                 </div>
                 
-                <!-- Thống kê đặt phòng -->
                 <div class="revenue-card">
-                    <h3>Thống kê đặt phòng</h3>
+                    <h3>📊 Thống kê đặt phòng</h3>
                     <div class="booking-stats">
                         <div class="stat-item">
                             <i class="fas fa-calendar-check"></i>
@@ -196,7 +230,6 @@
                 </div>
             </div>
             
-            <!-- Top phòng full width -->
             <div class="revenue-grid" style="margin-top: 24px;">
                 <div class="revenue-card">
                     <h3>🏆 Top phòng bán chạy</h3>
@@ -271,7 +304,7 @@
             
             <!-- Stats Cards -->
             <div class="stats-grid" style="margin-bottom: 24px;">
-                <div class="stat-card blue">
+<div class="stat-card blue">
                     <div class="stat-icon">
                         <i class="fas fa-shopping-bag"></i>
                     </div>
@@ -291,7 +324,7 @@
                     </div>
                 </div>
                 
-                <div class="stat-card blue">
+                <div class="stat-card cyan">
                     <div class="stat-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
@@ -301,8 +334,8 @@
                     </div>
                 </div>
                 
-                <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div class="stat-icon" style="background: rgba(255,255,255,0.3);">
+                <div class="stat-card purple">
+                    <div class="stat-icon">
                         <i class="fas fa-bed"></i>
                     </div>
                     <div class="stat-content">
@@ -321,8 +354,8 @@
                     </div>
                 </div>
                 
-                <div class="stat-card" style="background: #f3f4f6;">
-                    <div class="stat-icon" style="background: #9ca3af;">
+                <div class="stat-card red">
+                    <div class="stat-icon">
                         <i class="fas fa-times-circle"></i>
                     </div>
                     <div class="stat-content">
@@ -331,7 +364,7 @@
                     </div>
                 </div>
                 
-                <div class="stat-card purple">
+                <div class="stat-card orange">
                     <div class="stat-icon">
                         <i class="fas fa-dollar-sign"></i>
                     </div>

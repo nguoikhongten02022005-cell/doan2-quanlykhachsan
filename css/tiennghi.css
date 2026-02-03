@@ -1,6 +1,6 @@
 
 .noi-dung-chinh {
-    padding-top: 70px;
+    padding-top: 0;
 }
 
 .nen-menu-di-dong {
@@ -22,12 +22,13 @@
     position: fixed;
     top: 0;
     right: -100%;
-    width: 300px;
+    width: 280px;
     height: 100vh;
     background: white;
     box-shadow: -2px 0 10px rgba(0,0,0,0.1);
     z-index: 1000;
     transition: right 0.3s ease;
+    overflow-y: auto;
 }
 
 .menu-di-dong.active {
@@ -38,84 +39,76 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 15px 20px;
     border-bottom: 1px solid #eee;
 }
 
 .dau-menu-di-dong .logo {
     display: flex;
     align-items: center;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: #333;
 }
 
 .dau-menu-di-dong .logo i {
-    margin-right: 10px;
-    color: #667eea;
+    margin-right: 8px;
+    color: #0057b8;
+    font-size: 1.3rem;
 }
 
 .nut-dong-menu {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: #666;
     cursor: pointer;
     padding: 5px;
 }
 
 .lien-ket-menu-di-dong {
-    padding: 20px;
+    padding: 15px 20px;
 }
 
 .lien-ket-menu-di-dong a {
     display: block;
-    padding: 15px 0;
+    padding: 12px 0;
     color: #333;
     text-decoration: none;
     border-bottom: 1px solid #f0f0f0;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 .lien-ket-menu-di-dong a:hover {
-    color: #667eea;
+    color: #0057b8;
 }
 
 .nut-menu-banh {
     display: none;
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: #333;
     cursor: pointer;
-    padding: 10px;
-}
-
-@media (max-width: 768px) {
-    .nut-menu-banh {
-        display: block;
-    }
-    
-    .menu-di-dong {
-        width: 100%;
-    }
+    padding: 8px;
 }
 
 .hero-tien-nghi {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0057b8 0%, #00a8e8 100%);
     color: white;
-    padding: 80px 20px 40px 20px;
+    padding: 100px 20px 60px;
     text-align: center;
 }
 
 .hero-tien-nghi h1 {
-    font-size: 2.5rem;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
     font-weight: 700;
     margin-bottom: 1.5rem;
+    line-height: 1.2;
 }
 
 .hero-tien-nghi p {
-    font-size: 1.1rem;
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
     line-height: 1.8;
     max-width: 900px;
     margin: 0 auto;
@@ -123,8 +116,14 @@
 }
 
 .ba-dac-diem {
-    padding: 20px 20px 60px;
+    padding: 40px 20px 60px;
     background: white;
+}
+
+.hop-chua {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .luoi-dac-diem {
@@ -182,7 +181,7 @@
 }
 
 .tien-ich-bo-sung h2 {
-    font-size: 2.5rem;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
     font-weight: 700;
     text-align: center;
     color: #1e293b;
@@ -210,6 +209,11 @@
     border-radius: 12px;
     text-align: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.muc-tien-ich:hover {
+    transform: translateY(-5px);
 }
 
 .muc-tien-ich i {
@@ -236,7 +240,7 @@
 }
 
 .cam-ket-chat-luong h2 {
-    font-size: 2.5rem;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
     font-weight: 700;
     text-align: center;
     color: #1e293b;
@@ -299,24 +303,79 @@
     line-height: 1.6;
 }
 
+/* Responsive Breakpoints */
+@media (max-width: 1400px) {
+    .luoi-tien-ich {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1.5rem;
+    }
+}
+
 @media (max-width: 1200px) {
     .luoi-tien-ich {
         grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .luoi-cam-ket {
+        max-width: 900px;
+    }
+}
+
+@media (max-width: 992px) {
+    .hero-tien-nghi {
+        padding: 80px 20px 50px;
+    }
+    
+    .luoi-dac-diem {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .tien-ich-bo-sung,
+    .cam-ket-chat-luong {
+        padding: 60px 20px;
     }
 }
 
 @media (max-width: 768px) {
-    .hero-tien-nghi h1 {
-        font-size: 1.8rem;
+    .nut-menu-banh {
+        display: block;
     }
-
-    .hero-tien-nghi p {
-        font-size: 1rem;
+    
+    .menu-di-dong {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .menu-dieu-huong {
+        display: none !important;
+    }
+    
+    .hanh-dong-dieu-huong .nut-dang-nhap {
+        display: none;
+    }
+    
+    .hero-tien-nghi {
+        padding: 70px 15px 40px;
+    }
+    
+    .ba-dac-diem {
+        padding: 30px 15px 50px;
     }
 
     .luoi-dac-diem {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+    }
+    
+    .the-dac-diem {
+        padding: 1.5rem;
+    }
+
+    .tien-ich-bo-sung,
+    .cam-ket-chat-luong {
+        padding: 50px 15px;
     }
 
     .luoi-tien-ich {
@@ -335,20 +394,638 @@
     .luoi-cam-ket {
         grid-template-columns: 1fr;
     }
+}
 
-    .tien-ich-bo-sung h2,
-    .cam-ket-chat-luong h2 {
+@media (max-width: 576px) {
+    .hero-tien-nghi {
+        padding: 60px 15px 35px;
+    }
+    
+    .ba-dac-diem {
+        padding: 25px 15px 40px;
+    }
+    
+    .icon-dac-diem {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .icon-dac-diem i {
+        font-size: 1.5rem;
+    }
+    
+    .the-dac-diem h3 {
+        font-size: 1.3rem;
+    }
+    
+    .the-dac-diem p {
+        font-size: 0.95rem;
+    }
+    
+    .tien-ich-bo-sung,
+    .cam-ket-chat-luong {
+        padding: 40px 15px;
+    }
+    
+    .mo-ta-tien-ich,
+    .mo-ta-cam-ket {
+        font-size: 0.95rem;
+    }
+    
+    .luoi-tien-ich {
+        gap: 0.8rem;
+    }
+    
+    .muc-tien-ich {
+        padding: 1.2rem 0.8rem;
+    }
+    
+    .muc-tien-ich i {
         font-size: 1.8rem;
+    }
+    
+    .muc-tien-ich h4 {
+        font-size: 1rem;
+    }
+    
+    .muc-tien-ich p {
+        font-size: 0.85rem;
+    }
+    
+    .the-cam-ket {
+        padding: 2rem 1.5rem;
+    }
+    
+    .icon-cam-ket {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .icon-cam-ket i {
+        font-size: 1.5rem;
+    }
+    
+    .the-cam-ket h3 {
+        font-size: 1.3rem;
+    }
+    
+    .the-cam-ket p {
+        font-size: 0.95rem;
     }
 }
 
 @media (max-width: 480px) {
     .hero-tien-nghi {
-        padding: 60px 20px;
+        padding: 50px 12px 30px;
     }
-
+    
+    .ba-dac-diem {
+        padding: 20px 12px 35px;
+    }
+    
     .luoi-tien-ich {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .the-dac-diem {
+        padding: 1.2rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .hero-tien-nghi {
+        padding: 45px 10px 25px;
+    }
+    
+    .ba-dac-diem {
+        padding: 15px 10px 30px;
+    }
+    
+    .icon-dac-diem {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .icon-dac-diem i {
+        font-size: 1.3rem;
+    }
+    
+    .the-dac-diem h3 {
+        font-size: 1.2rem;
+    }
+    
+    .the-dac-diem p {
+        font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 991px) {
+    .menu-dieu-huong {
+        display: flex !important;
+        gap: 1rem;
+    }
+    
+    .menu-dieu-huong a {
+        font-size: 0.9rem;
+    }
+    
+    .nut-menu-banh {
+        display: none !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .menu-dieu-huong {
+        display: flex !important;
+    }
+    
+    .nut-menu-banh {
+        display: none !important;
+    }
+}
+
+/* Extra Large Screens */
+@media (min-width: 1600px) {
+    .luoi-tien-ich {
+        max-width: 1800px;
+        gap: 2rem;
+    }
+    
+    .tien-ich-bo-sung,
+    .cam-ket-chat-luong {
+        padding: 100px 20px;
+    }
+}
+
+/* Footer Responsive */
+.chan-trang {
+    background: #1f2937;
+    color: white;
+    padding: 60px 0 20px;
+}
+
+.hop-chan-trang {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+.khu-chan-trang h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.logo-chan-trang {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2563eb;
+    margin-bottom: 20px;
+}
+
+.mo-ta-chan-trang {
+    color: #9ca3af;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.lien-ket-mxh {
+    display: flex;
+    gap: 15px;
+}
+
+.lien-ket-mxh a {
+    width: 40px;
+    height: 40px;
+    background: #374151;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+
+.lien-ket-mxh a:hover {
+    background: #2563eb;
+}
+
+.khu-chan-trang ul {
+    list-style: none;
+}
+
+.khu-chan-trang ul li {
+    margin-bottom: 10px;
+}
+
+.khu-chan-trang ul li a {
+    color: #9ca3af;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.khu-chan-trang ul li a:hover {
+    color: white;
+}
+
+.bieu-mau-ban-tin {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.bieu-mau-ban-tin input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    background: #374151;
+    color: white;
+}
+
+.bieu-mau-ban-tin input::placeholder {
+    color: #9ca3af;
+}
+
+.bieu-mau-ban-tin button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.bieu-mau-ban-tin button:hover {
+    background: #1d4ed8;
+}
+
+.chan-trang-duoi {
+    border-top: 1px solid #374151;
+    margin-top: 40px;
+    padding-top: 20px;
+}
+
+.chan-trang-duoi .hop-chan-trang {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    grid-template-columns: none;
+}
+
+.lien-ket-chan-trang {
+    display: flex;
+    gap: 20px;
+}
+
+.lien-ket-chan-trang a {
+    color: #9ca3af;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.lien-ket-chan-trang a:hover {
+    color: #0071c2;
+}
+
+@media (max-width: 992px) {
+    .chan-trang {
+        padding: 50px 0 20px;
+    }
+    
+    .hop-chan-trang {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .chan-trang {
+        padding: 40px 0 20px;
+    }
+    
+    .hop-chan-trang {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+        padding: 0 15px;
+    }
+    
+    .chan-trang-duoi {
+        margin-top: 30px;
+        padding-top: 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .chan-trang {
+        padding: 35px 0 15px;
+    }
+    
+    .hop-chan-trang {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        padding: 0 15px;
+    }
+    
+    .chan-trang-duoi .hop-chan-trang {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .lien-ket-chan-trang {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .bieu-mau-ban-tin {
+        flex-direction: column;
+    }
+    
+    .bieu-mau-ban-tin button {
+        padding: 12px;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+    .chan-trang-duoi .hop-chan-trang {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .lien-ket-chan-trang {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+    .chan-trang-duoi .hop-chan-trang {
+        flex-direction: row;
+        flex-wrap: wrap;
+        text-align: left;
+        gap: 1rem;
+    }
+    
+    .lien-ket-chan-trang {
+        flex-wrap: wrap;
+    }
+}
+
+@media (min-width: 993px) {
+    .chan-trang-duoi .hop-chan-trang {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .lien-ket-chan-trang {
+        display: flex;
+        gap: 20px;
+    }
+}
+
+/* Additional Responsive Breakpoints */
+@media (max-width: 480px) {
+    .menu-dieu-huong {
+        display: none;
+    }
+    
+    .nut-menu-banh {
+        display: block !important;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+    .menu-dieu-huong {
+        display: none;
+    }
+    
+    .nut-menu-banh {
+        display: block !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .menu-dieu-huong {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .menu-dieu-huong a {
+        font-size: 0.95rem;
+    }
+    
+    .hop-dieu-huong {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .menu-dieu-huong {
+        display: flex;
+        gap: 1.5rem;
+    }
+    
+    .hop-dieu-huong {
+        max-width: 1200px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .menu-dieu-huong {
+        display: flex;
+        gap: 2rem;
+    }
+    
+    .nut-menu-banh {
+        display: none !important;
+    }
+    
+    .hop-dieu-huong {
+        max-width: 1200px;
+    }
+}
+
+/* Extra Large Screens */
+@media (min-width: 1600px) {
+    .hop-chan-trang {
+        max-width: 1400px;
+    }
+    
+    .luoi-tien-ich {
+        max-width: 1800px;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 360px) {
+    .logo {
+        font-size: 1.2rem;
+    }
+    
+    .nut-dang-nhap {
+        font-size: 0.9rem;
+        padding: 0 15px;
+        min-width: 100px;
+    }
+    
+    .hero-tien-nghi h1 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Chatbot Responsive */
+.chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.chatbot-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0057b8 0%, #00a8e8 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 87, 184, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.3s;
+}
+
+.chatbot-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 87, 184, 0.5);
+}
+
+.chatbot-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 380px;
+    height: 500px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chatbot-window.active {
+    display: flex;
+}
+
+.chatbot-header {
+    background: linear-gradient(135deg, #0057b8 0%, #00a8e8 100%);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatbot-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chatbot-close {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px;
+}
+
+.chatbot-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.chatbot-input-area {
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 10px;
+}
+
+.chatbot-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    outline: none;
+    font-size: 14px;
+}
+
+.chatbot-input:focus {
+    border-color: #2563eb;
+}
+
+.chatbot-send {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0057b8 0%, #00a8e8 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.chatbot-send:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width: 480px) {
+    .chatbot-button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3rem;
+    }
+    
+    .chatbot-window {
+        width: calc(100vw - 40px);
+        height: 60vh;
+        bottom: 70px;
+        right: 0;
+    }
+}
+
+@media (max-width: 375px) {
+    .chatbot-window {
+        width: calc(100vw - 20px);
+        right: 0;
+        left: 10px;
     }
 }
 
